@@ -5,7 +5,7 @@ import vcd_getinfo as vcdinfo
 import vcd_getsignal as vcdsignal
 
 def main():
-    tmp = "simulation/simdir/sim.vcd"
+    tmp = "sim.vcd" #"simulation/simdir/sim.vcd"
     simscale_mag, simscale_unit = vcdinfo.get_timescale(tmp)
     print(f" [TEST] - Simulation timescale unit : {simscale_mag}{simscale_unit}")
     simtime = vcdinfo.get_simulation_time(tmp)
