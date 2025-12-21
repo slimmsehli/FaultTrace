@@ -1,3 +1,4 @@
 venv
+.env
 simulation/simdir/
 __pycache__

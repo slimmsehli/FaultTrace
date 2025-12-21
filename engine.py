@@ -1,11 +1,14 @@
-import openai
+
 import json
 from typing import List, Dict, Any
+from openai import OpenAI
+
 
 
 class VeriDebugAgent:
-    def __init__(self, api_key: str, model: str = "gpt-4o"):
-        self.client = openai.OpenAI(api_key=api_key)
+    #def __init__(self, api_key: str, model: str = "gpt-4o"):
+    def __init__(self, model: str = "gpt-4o"):
+        self.client = OpenAI() #api_key=api_key)
         self.model = model
         # The System Prompt is the "Mindset"
         self.system_prompt = (

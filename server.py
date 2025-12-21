@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-import vcd_parser_module as vcd_lib # Your existing code
+#import vcd_parser_module as vcd_lib # Your existing code
 
 # Initialize MCP Server
 mcp = FastMCP("VeriSight-AI")
