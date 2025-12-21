@@ -170,9 +170,51 @@ def search_value(vcd: VCDVCD, signal_name: str, value: Any, start: Optional[Unio
     return [t for (t, v) in changes if (v.lower() if isinstance(v, str) else v) == target]
 
 
+######################################################################
+######  search for multiple signals in a timeframe and return their values
+######################################################################
+# take a list of signals, a window timeframe, and give back a table of the signals and their transitions int eh given window
+# @TODO not implemented yet
 
 
+######################################################################
+######  search for a state of a signal in a timeframe
+######################################################################
+# need to implement the search for a state and values for a signal in a timeframe and get back the time
+# Logic-Based Search
+# @TODO not implemented yet
 
 
+######################################################################
+######  stable interval search for a signal in a timeframe
+######################################################################
+# to search for how long a signal is stable without gliches for setup and hold time
+# Protocol-Specific Analysis
+# @TODO not implemented yet
+
+######################################################################
+######  map logic values to states like IDLE, ready and others with connection to a source code or a package
+######################################################################
+# Bus & Enum Interpretation
+# @TODO not implemented yet
 
 
+######################################################################
+######  give the related signals in a module based on the input signal
+######################################################################
+# Hierarchy Navigation
+# @TODO not implemented yet
+
+
+######################################################################
+######  check two signals edges
+######################################################################
+# context based to check if signal A toggle  before signal B or after in a time window
+# @TODO not implemented yet
+
+
+######################################################################
+######  multiple signals status in a single timestamp
+######################################################################
+# timestamp value for a list of signals
+# @TODO not implemented yet
