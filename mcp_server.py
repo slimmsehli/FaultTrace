@@ -1,19 +1,38 @@
+######################################################
+#
+#
+#
+# this is a mcp server with function calls (tools) for vcd parsing and logfile/source code parsing 
+# to be used by the client
+#
+#
+######################################################
+
 import bisect
 
 from mcp.server.fastmcp import FastMCP
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Iterable
 from vcdvcd import VCDVCD
 from decimal import Decimal
 import re
 import os
 
-# function to get information from vcd file
-#import vcd_getinfo as getinfo
+######################################################
+# This is a MCP server code for the toolsbox needed for parsing the vcd file and log file
+# and extracting the needed information
 
 mcp = FastMCP("RTL_Toolbox")
 
+############################################## 
+#
+#
+# 				Log/Source code parsing
+#
+#
+##############################################
+
 ##########################################
-###### parse a log file and extract errors
+###### 1.log parse a log file and extract errors
 ##########################################
 @mcp.tool()
 def parse_log_for_errors(log_path: str) -> str:
@@ -58,34 +77,20 @@ def parse_log_for_errors(log_path: str) -> str:
     return str(errors) if errors else "[]"
 
 ##########################################
-###### extract a code snipet from a source code file
+###### 2.log find the Nth erros message in the log file
 ##########################################
+# @TODO need to extract the line itself : curently only the line 
 @mcp.tool()
-def get_source_snippet(file_path: str, line_number: int, context: int = 5):
-    """Extracts a specific line from source code with surrounding context."""
-    try:
-        with open(file_path, "r") as f:
-            lines = f.readlines()
-            start = max(0, line_number - context - 1)
-            end = min(len(lines), line_number + context)
-            return "".join(lines[start:end])
-    except FileNotFoundError:
-        return f"File {file_path} not found."
-
-##########################################
-###### find the Nth erros message in the log file
-##########################################
-@mcp.tool()
-def find_first_uvm_error(log_path: str) -> str:
+def find_first_uvm_error(log_path: str) -> List[Tuple[Any, Any]]:
     """Finds the line number of the first UVM_ERROR or UVM_FATAL."""
     with open(log_path, "r") as f:
         for i, line in enumerate(f):
             if "UVM_ERROR" in line or "UVM_FATAL" in line:
-                return str(i + 1) # Return as string for MCP
+                return str(i + 1), line # Return as string for MCP
     return "0"
 
 ##########################################
-###### extract the previous 20 lines
+###### 3.log extract the previous 20 lines
 ##########################################
 # @TODO to change this to extrat N lines before the error line
 @mcp.tool()
@@ -106,7 +111,7 @@ def get_error_context(log_path: str, error_line: int, window: int = 20) -> str:
         return f"Error extracting context: {e}"
 
 ##########################################
-###### this function is to search for any keyword in a file and extract some lines around the erro
+###### 4.log this function is to search for any keyword in a file and extract some lines around the erro
 ##########################################
 @mcp.tool()
 def search_log_keyword(log_path: str, keyword: str, context_lines: int = 10) -> str:
@@ -138,7 +143,7 @@ def search_log_keyword(log_path: str, keyword: str, context_lines: int = 10) -> 
 
 
 ##########################################
-###### extract code snipet from a source code file
+###### 5.log extract code snipet from a source code file
 ##########################################
 @mcp.tool()
 def get_source_snippet(file_path: str, line_number: int, context: int = 5) -> str:
@@ -163,10 +168,17 @@ def get_source_snippet(file_path: str, line_number: int, context: int = 5) -> st
     except Exception as e:
         return f"Error reading source file: {str(e)}"
 
-############################################## VCD parsing
+############################################## 
+#
+#
+# 							VCD parsing
+#
+#
+##############################################
+
 
 ######################################################################
-###### time parsing helpers ----
+###### 1.vcd time parsing helpers ----
 ######################################################################
 
 _UNIT_TO_SEC = {
@@ -210,7 +222,7 @@ def _bit(value: str, size_hint: Optional[int], bit_index: Optional[int]) -> Opti
     return None
 
 ######################################################################
-###### get simulation time
+###### 2.vcd get simulation time
 ######################################################################
 def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> float:
     """
@@ -219,7 +231,10 @@ def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> float:
     """
     if os.path.exists(path):
         vcd = VCDVCD(path, store_tvs=True, store_scopes=store_scopes)
-        magnitude, unit = vcd_get_timescale(path)
+        ts = vcd.timescale
+        magnitude = ts['magnitude']
+        unit = ts['unit']
+        #magnitude, unit = vcd_get_timescale(path)
     else:
         return 0
     # Parse or reuse object // old function used to read the vcd file
@@ -258,11 +273,21 @@ def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> float:
     return float(sim_time_seconds)
 
 ##########################################
-###### Get the timescale from a vcd file
+###### 3.vcd Get the timescale from a vcd file
 ##########################################
 
 @mcp.tool()
-def vcd_get_timescale(path: str, store_scopes: bool = False) -> str:
+def vcd_get_timescale_scal(path: str, store_scopes: bool = False) -> List[Tuple[Any, Any]]:
+    """ Get the magnitude and the unit of the timescale of a vcd file and output as two string format """
+    if os.path.exists(path):
+        vcdobj = VCDVCD(path, store_tvs=True, store_scopes=store_scopes)
+        ts = vcdobj.timescale  # {'magnitude': 1, 'unit': 'ns'}
+        return ts['magnitude'], ts['unit']
+    else:
+        return "File does not exist"
+
+@mcp.tool()
+def vcd_get_timescale_str(path: str, store_scopes: bool = False) -> str:
     """ Get the magnitude and the unit of the timescale of a vcd file and output as two string format """
     if os.path.exists(path):
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=store_scopes)
@@ -272,7 +297,7 @@ def vcd_get_timescale(path: str, store_scopes: bool = False) -> str:
         return "File does not exist"
 
 ######################################################################
-###### get signal value at a specific timestamp
+###### 4.vcd get signal value at a specific timestamp
 ######################################################################
 
 def vcd_get_signal_value_at_timestamp(path: str, signal_name: str, timestamp: Union[str, float, int], method: str = "previous") -> Any:
@@ -299,7 +324,7 @@ def vcd_get_signal_value_at_timestamp(path: str, signal_name: str, timestamp: Un
     return tv[idx][1]
 
 ######################################################################
-###### get signal value at a specific time frame
+###### 5.vcd get signal value at a specific time frame
 ######################################################################
 
 def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], include_start_prev: bool = True) -> List[Tuple[float, Any]]:
@@ -317,14 +342,14 @@ def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optio
     window = _in_window(tv, s, e)
     out = []
     if include_start_prev and start is not None:
-        prev = vcd_get_signal_value_at_timestamp(vcdobj, signal_name, s, method="previous")
+        prev = vcd_get_signal_value_at_timestamp(path, signal_name, s, method="previous")
         if prev is not None:
             out.append((s, prev))
     out.extend(window)
     return out
 
 ######################################################################
-###### Count a signal transitions in a time frame
+###### 6.vcd Count a signal transitions in a time frame
 ######################################################################
 # count_signal_all_transitions (vcd: VCDVCD, signal_name: str, edge: str, start:etr, end:str, bit_index:int)
 def vcd_count_signal_all_transitions(path: str, signal_name: str, edge: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], bit_index: Optional[int] = None) -> int:
@@ -356,7 +381,7 @@ def vcd_count_signal_all_transitions(path: str, signal_name: str, edge: str, sta
     return cnt
 
 ######################################################################
-###### Get the first edge after a timestamp
+###### 7.vcd Get the first edge after a timestamp
 ######################################################################
 ### @TODO need add the first value and the value after the transition in the output results
 def vcd_next_change_after(path: str, signal_name: str, timestamp: Union[str, float, int]) -> Optional[Tuple[float, Any]]:
@@ -379,7 +404,7 @@ def vcd_next_change_after(path: str, signal_name: str, timestamp: Union[str, flo
     return None
 
 ######################################################################
-###### Get the first edge after a timestamp
+###### 8.vcd Get the first edge after a timestamp
 ######################################################################
 ### @TODO need add the first value and the value after the transition in the output results
 def vcd_prev_change_before(path: str, signal_name: str, timestamp: Union[str, float, int]) -> Optional[Tuple[float, Any]]:
@@ -402,7 +427,7 @@ def vcd_prev_change_before(path: str, signal_name: str, timestamp: Union[str, fl
     return None
 
 ######################################################################
-###### Search for a vlaue of a singal
+###### 9.vcd Search for a vlaue of a singal
 ######################################################################
 ### @TODO  need to add the entire timeframe where the signal has the extracted value not only the transition
 def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Union[str, float, int]] = None, end: Optional[Union[str, float, int]] = None) -> List[float]:
@@ -414,12 +439,12 @@ def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Un
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
     else:
         return [0]
-    changes = vcd_get_signal_values_in_timeframe(vcdobj, signal_name, start, end, include_start_prev=False)
+    changes = vcd_get_signal_values_in_timeframe(path, signal_name, start, end, include_start_prev=False)
     target = value.lower() if isinstance(value, str) else value
     return [t for (t, v) in changes if (v.lower() if isinstance(v, str) else v) == target]
 
 ######################################################################
-###### show the hierarchy of the design
+###### 10.vcd show the hierarchy of the design
 ######################################################################
 @mcp.tool()
 def list_vcd_signals(path: str, pattern: str = "", store_scopes: bool = False) -> str:
@@ -436,10 +461,129 @@ def list_vcd_signals(path: str, pattern: str = "", store_scopes: bool = False) -
         return f"Error: {e}"
 
 ######################################################################
-######  search for multiple signals in a timeframe and return their values
+###### 11.vcd get a list of signals values at a specific timestamp
 ######################################################################
-# take a list of signals, a window timeframe, and give back a table of the signals and their transitions int eh given window
-# @TODO not implemented yet
+
+def vcd_get_signals_values_at_timestamp(
+    path: str,
+    signal_names: Iterable[str],
+    timestamp: Union[str, float, int],
+    method: str = "previous",
+) -> Dict[str, Any]:
+    """
+    Return a dict {signal_name: value_at_timestamp} for multiple signals.
+    - method='previous': last value at or before timestamp (step/hold semantics)
+    - method='exact': only return a value if there is an event exactly at timestamp; else None
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(path)
+
+    vcd = VCDVCD(path, store_tvs=True, store_scopes=False)
+    t_sec = _to_seconds(timestamp)
+
+    out: Dict[str, Any] = {}
+
+    for sig in signal_names:
+        if sig not in vcd.signals:
+            out[sig] = None
+            continue
+
+        tv: List[Tuple[Union[int, float], Any]] = vcd[sig].tv  # [(time, value)]
+        if not tv:
+            out[sig] = None
+            continue
+
+        times = [float(t) for (t, _) in tv]
+
+        if method == "exact":
+            i = bisect.bisect_left(times, t_sec)
+            out[sig] = tv[i][1] if 0 <= i < len(times) and times[i] == t_sec else None
+            continue
+
+        idx = bisect.bisect_right(times, t_sec) - 1
+        out[sig] = tv[idx][1] if idx >= 0 else None
+
+    return out
+
+######################################################################
+###### 12.vcd get a list of signals values at a specific time frame
+######################################################################
+
+def vcd_get_signals_aligned_in_window(
+    path: str,
+    signal_names: Iterable[str],
+    start: Union[str, float, int],
+    end: Union[str, float, int],
+) -> Tuple[List[float], Dict[str, List[Any]]]:
+    """
+    Returns (times, values_by_signal):
+    - times: sorted list including 'start' and all change times of the requested signals
+             that fall within (start, end].
+    - values_by_signal: {signal_name: [v0, v1, ...]} aligned to 'times'
+      using step/hold semantics (previous value up to next change).
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(path)
+    vcd = VCDVCD(path, store_tvs=True, store_scopes=False)
+
+    t0 = _to_seconds(start)
+    t1 = _to_seconds(end)
+    if t1 < t0:
+        raise ValueError("end must be >= start")
+
+    # Collect change times for the window
+    change_times: set = {t0}
+
+    per_sig_tv: Dict[str, List[Tuple[float, Any]]] = {}
+    per_sig_times: Dict[str, List[float]] = {}
+
+    for sig in signal_names:
+        if sig not in vcd.signals or not vcd[sig].tv:
+            per_sig_tv[sig] = []
+            per_sig_times[sig] = []
+            continue
+
+        tv = [(float(t), v) for (t, v) in vcd[sig].tv]
+        per_sig_tv[sig] = tv
+        times = [t for (t, _) in tv]
+        per_sig_times[sig] = times
+
+        # add events strictly after start and up to end
+        i = bisect.bisect_right(times, t0)
+        while i < len(tv) and tv[i][0] <= t1:
+            change_times.add(tv[i][0])
+            i += 1
+
+    # Build sorted timeline
+    timeline = sorted(change_times)
+
+    # For each signal, produce step-held values along the timeline
+    values_by_signal: Dict[str, List[Any]] = {}
+
+    for sig in signal_names:
+        tv = per_sig_tv.get(sig, [])
+        if not tv:
+            values_by_signal[sig] = [None] * len(timeline)
+            continue
+
+        times = per_sig_times[sig]
+
+        # Start from last index at/before t0
+        idx = bisect.bisect_right(times, t0) - 1
+        current_val = tv[idx][1] if idx >= 0 else None
+
+        vals: List[Any] = []
+        j = max(idx + 1, 0)
+        for t in timeline:
+            # advance j to consume changes at or before t
+            while j < len(tv) and tv[j][0] <= t:
+                current_val = tv[j][1]
+                j += 1
+            vals.append(current_val)
+
+        values_by_signal[sig] = vals
+
+    return timeline, values_by_signal
 
 
 ######################################################################

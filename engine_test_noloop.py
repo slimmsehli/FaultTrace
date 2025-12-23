@@ -1,3 +1,13 @@
+######################################################
+#
+#
+#
+# This is a test for the ai main engine wihtout a loop for response
+#
+#
+#
+######################################################
+
 import asyncio
 import json
 from openai import OpenAI

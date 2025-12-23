@@ -275,7 +275,8 @@ module top;
     // UVM Start
     initial begin
       $dumpfile("sim.vcd");
-        $dumpvars(0, top);
+      //$dumpvars(0);
+      $dumpvars(0, top);
         uvm_config_db#(virtual i2c_if)::set(null, "*", "vif", intf);
         run_test("i2c_test");
     end
