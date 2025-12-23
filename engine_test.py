@@ -9,6 +9,9 @@ load_dotenv()
 
 client = OpenAI()
 
+log_file = "./simulation/sim.log"
+vcd_file = "./simulation/sim.vcd"
+
 async def run_agent_loop():
     server_params = StdioServerParameters(command="python", args=["server_test.py"])
 
@@ -30,7 +33,8 @@ async def run_agent_loop():
                         "   - Use 'vcd_get_timescale' to understand the simulation units.\n"
                         "   - Map source signals to VCD hierarchy. If a signal 'out' is in 'top.dut', query 'top.dut.out'.\n"
                         "   - Use 'vcd_get_signal_value_at_timestamp' to check the actual hardware state at the time of failure.\n"
-                        "4. **Root Cause**: Compare the 'Expected' value (from source logic) vs 'Actual' value (from VCD). Explain the discrepancy."
+                        "4. **Root Cause**: Compare the 'Expected' value (from source logic) vs 'Actual' value (from VCD). Explain the discrepancy.\n"
+                        f"the log file is ./simulation/sim.log and the vcd file for waves is ./simulation/sim.vcd and all the files paths are from the folder simulation"
                     )
                 },
                 {
@@ -52,38 +56,6 @@ async def run_agent_loop():
                                 "log_path": {"type": "string"},
                                 "keyword": {"type": "string"},
                                 "context_lines": {"type": "integer"}
-                            },
-                            "required": ["log_path", "keyword"]
-                        }
-                    }
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "get_source_snippet",
-                        "description": "Read a specific portion of a source code file.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "file_path": {"type": "string"},
-                                "line_number": {"type": "integer"},
-                                "context": {"type": "integer"}
-                            },
-                            "required": ["file_path", "line_number"]
-                        }
-                    }
-                },
-                {
-                    "type": "function",
-                    "function": {
-                        "name": "search_log_keyword",
-                        "description": "Search the simulation log for errors, warnings, or specific keywords.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "log_path": {"type": "string"},
-                                "keyword": {"type": "string"},
-                                "context_lines": {"type": "integer", "default": 10}
                             },
                             "required": ["log_path", "keyword"]
                         }
@@ -258,7 +230,7 @@ async def run_agent_loop():
             # 3. The ReAct Loop
             max_iterations = 15
             for i in range(max_iterations):
-                print(f"\n[Iteration {i + 1}] Thinking...")
+                print(f"\n\n\n\n[Iteration {i + 1}] Thinking...")
 
                 response = client.chat.completions.create(
                     model="gpt-4o",
@@ -270,9 +242,13 @@ async def run_agent_loop():
                 response_message = response.choices[0].message
                 messages.append(response_message)
 
+                # this prints the agent inner thinking
+                if response_message.content:
+                    print(f"\n\n[REASONING]: {response_message.content}")
+
                 # Check if the LLM wants to finish or call a tool
                 if not response_message.tool_calls:
-                    print("\n--- Final Diagnosis ---")
+                    print("\n\n--- Final Diagnosis ---")
                     print(response_message.content)
                     break
 
@@ -282,11 +258,11 @@ async def run_agent_loop():
                     fargs = json.loads(tool_call.function.arguments)
 
                     # LOGGING FOR YOU TO TRACK PROGRESS
-                    print(f"[Iteration {i + 1}] LLM calls {fname}, fargs {fargs}")
+                    print(f"\n\n[Iteration {i + 1}] LLM calls {fname}, fargs {fargs}")
 
                     # Execute the MCP tool (which calls your vcdvcd wrapper)
                     result = await session.call_tool(fname, fargs)
-                    #print(f"[Iteration {i + 1}] LLM results from function {result}")
+                    print(f"\n\n[Iteration {i + 1}] LLM results from function {result}")
 
                     messages.append({
                         "role": "tool",

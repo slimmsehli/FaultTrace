@@ -1,19 +1,16 @@
 import bisect
 
 from mcp.server.fastmcp import FastMCP
-# function to get information from vcd file
-import vcd_getinfo as getinfo
 from typing import Any, Dict, List, Optional, Tuple, Union
 from vcdvcd import VCDVCD
 from decimal import Decimal
 import re
 import os
 
+# function to get information from vcd file
+#import vcd_getinfo as getinfo
+
 mcp = FastMCP("RTL_Toolbox")
-
-# This is an example to load a log file,
-# extract the output vcd file name and then get the timescale form the vcd file
-
 
 ##########################################
 ###### parse a log file and extract errors
@@ -149,7 +146,7 @@ def get_source_snippet(file_path: str, line_number: int, context: int = 5) -> st
     Opens a source code file and extracts the code around a specific line.
     """
     try:
-        # Standardize path (handles ./simulation/top.sv)
+        # Standardize path (handles ./simulation/testbench.sv)
         normalized_path = os.path.normpath(file_path)
 
         if not os.path.exists(normalized_path):
@@ -220,9 +217,9 @@ def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> float:
     Return total simulation time in seconds (float).
     Accepts a VCD file path.
     """
-    if path.exists():
+    if os.path.exists(path):
         vcd = VCDVCD(path, store_tvs=True, store_scopes=store_scopes)
-        magnitude, unit = getinfo.get_timescale(vcd)
+        magnitude, unit = vcd_get_timescale(path)
     else:
         return 0
     # Parse or reuse object // old function used to read the vcd file
@@ -263,17 +260,16 @@ def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> float:
 ##########################################
 ###### Get the timescale from a vcd file
 ##########################################
-from pathlib import Path
+
 @mcp.tool()
 def vcd_get_timescale(path: str, store_scopes: bool = False) -> str:
     """ Get the magnitude and the unit of the timescale of a vcd file and output as two string format """
-    if path.exists():
+    if os.path.exists(path):
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=store_scopes)
-        magnitude, unit = getinfo.get_timescale(vcdobj)
-        return f"{magnitude} {unit}"
+        ts = vcdobj.timescale  # {'magnitude': 1, 'unit': 'ns'}
+        return f"{ts['magnitude']} {ts['unit']}"
     else:
         return "File does not exist"
-
 
 ######################################################################
 ###### get signal value at a specific timestamp
@@ -284,7 +280,7 @@ def vcd_get_signal_value_at_timestamp(path: str, signal_name: str, timestamp: Un
     Return the value of a signal at a specific timestamp.
     the input is the signal name and the timestamp
     """
-    if path.exists():
+    if os.path.exists(path):
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
     else:
         return 0, 0
@@ -311,7 +307,7 @@ def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optio
     Return the values of a signal at a specific time window.
     the input is the signal name and the time window high and low limit
     """
-    if path.exists():
+    if os.path.exists(path):
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
     else:
         return [(0, 0)]
@@ -336,7 +332,7 @@ def vcd_count_signal_all_transitions(path: str, signal_name: str, edge: str, sta
     Return the count of the number of a signal edges in a time window
     the input is the signal name, the edge, the start and finsh time limit of the time window and a bit index if it is a bus
     """
-    if path.exists():
+    if os.path.exists(path):
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
     else:
         return 0
@@ -368,7 +364,7 @@ def vcd_next_change_after(path: str, signal_name: str, timestamp: Union[str, flo
     Return the first change of a signal after a timestamp.
     the input is the signal name and the timestamp
     """
-    if path.exists():
+    if os.path.exists(path):
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
     else:
         return 0, 0
@@ -391,7 +387,7 @@ def vcd_prev_change_before(path: str, signal_name: str, timestamp: Union[str, fl
     Return the first change of a signal before a timestamp.
     the input is the signal name and the timestamp
     """
-    if path.exists():
+    if os.path.exists(path):
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
     else:
         return 0, 0
@@ -414,7 +410,7 @@ def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Un
     Return if a signal has encountered a specific value during the simulation
     the input is the signal name and the value to be searched
     """
-    if path.exists():
+    if os.path.exists(path):
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
     else:
         return [0]
@@ -429,7 +425,7 @@ def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Un
 def list_vcd_signals(path: str, pattern: str = "", store_scopes: bool = False) -> str:
     """Returns a list of all signals in the VCD matching a pattern (e.g., 'dut')."""
     try:
-        if path.exists():
+        if os.path.exists(path):
             vcdobj = VCDVCD(path, store_tvs=True, store_scopes=store_scopes)
         else :
             return "error : vcd File does not exist"
