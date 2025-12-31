@@ -143,7 +143,6 @@ def search_log_keyword(log_path: str, keyword: str, context_lines: int = 10) -> 
     except Exception as e:
         return f"Error: {str(e)}"
 
-
 ##########################################
 ###### 5.log extract code snipet from a source code file
 ##########################################
@@ -227,6 +226,7 @@ def _bit(value: str, size_hint: Optional[int], bit_index: Optional[int]) -> Opti
 ###### vcd get simulation time
 ######################################################################
 #def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> float:
+@mcp.tool()
 def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> str:
     """
     Return total simulation time in seconds (float).
@@ -279,7 +279,6 @@ def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> str:
 ##########################################
 ###### vcd Get the timescale from a vcd file
 ##########################################
-
 @mcp.tool()
 #def vcd_get_timescale_scal(path: str, store_scopes: bool = False) -> List[Tuple[Any, Any]]:
 def vcd_get_timescale_scal(path: str, store_scopes: bool = False) -> str:
@@ -322,12 +321,12 @@ def list_vcd_signals(path: str, pattern: str = "", store_scopes: bool = False) -
     except Exception as e:
         return f"Error: {e}"
 
-
 ######################################################################
 ###### vcd get signal value at a specific timestamp
 ######################################################################
 # @TODO to add the single bit from a bus option in the return string
 #def vcd_get_signal_value_at_timestamp(path: str, signal_name: str, timestamp: Union[str, float, int], method: str = "previous") -> Any:
+@mcp.tool()
 def vcd_get_signal_value_at_timestamp(path: str, signal_name: str, timestamp: Union[str, float, int], method: str = "previous") -> str:
     """
     Return the value of a signal at a specific timestamp.
@@ -352,6 +351,8 @@ def vcd_get_signal_value_at_timestamp(path: str, signal_name: str, timestamp: Un
     #return tv[idx][1]
     return f"Signal {signal_name} value at timestamp {timestamp} is {tv[idx][1]}"
 
+### this version of the function return a scalar to be used by another local function so no need for a string return type
+@mcp.tool()
 def vcd_get_signal_value_at_timestamp_scal(path: str, signal_name: str, timestamp: Union[str, float, int], method: str = "previous") -> Any:
     """
         Return the value of a signal at a specific timestamp.
@@ -374,11 +375,11 @@ def vcd_get_signal_value_at_timestamp_scal(path: str, signal_name: str, timestam
     if idx < 0:
         return None
     return tv[idx][1]
+
 ######################################################################
 ###### vcd get signal value at a specific time frame
 ######################################################################
-
-#def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], include_start_prev: bool = True) -> List[Tuple[float, Any]]:
+@mcp.tool()
 def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], include_start_prev: bool = True) -> str:
     """
     Return the values of a signal at a specific time window.
@@ -401,12 +402,35 @@ def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optio
     #return out
     return f"Signal {signal_name} values in the timewindow {start}-{end} are : {out}"
 
+### this version of the function return a scalar to be used by another local function so no need for a string return type
+@mcp.tool()
+def vcd_get_signal_values_in_timeframe_scal(path: str, signal_name: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], include_start_prev: bool = True) -> Any:
+    """
+    Return the values of a signal at a specific time window.
+    the input is the signal name and the time window high and low limit
+    """
+    if os.path.exists(path):
+        vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
+    else:
+        return "error : vcd File does not exist"
+    tv = vcdobj[signal_name].tv
+    s = None if start is None else _to_seconds(start)
+    e = None if end is None else _to_seconds(end)
+    window = _in_window(tv, s, e)
+    out = []
+    if include_start_prev and start is not None:
+        prev = vcd_get_signal_value_at_timestamp_scal(path, signal_name, s, method="previous")
+        if prev is not None:
+            out.append((s, prev))
+    out.extend(window)
+    return out
+
 ######################################################################
 ###### vcd Count a signal transitions in a time frame
 ######################################################################
 # count_signal_all_transitions (vcd: VCDVCD, signal_name: str, edge: str, start:etr, end:str, bit_index:int)
 # @TODO this only supportes signals and not bus, need to update the function to support bus with changes on the bus instead of edges
-#def vcd_count_signal_all_transitions(path: str, signal_name: str, edge: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], bit_index: Optional[int] = None) -> int:
+@mcp.tool()
 def vcd_count_signal_all_transitions(path: str, signal_name: str, edge: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], bit_index: Optional[int] = None) -> str:
     """
     Return the count of the number of a signal edges in a time window
@@ -440,7 +464,7 @@ def vcd_count_signal_all_transitions(path: str, signal_name: str, edge: str, sta
 ###### vcd Get the first edge after a timestamp
 ######################################################################
 ### @TODO need add the first value and the value after the transition in the output results
-#def vcd_next_change_after(path: str, signal_name: str, timestamp: Union[str, float, int]) -> Optional[Tuple[float, Any]]:
+@mcp.tool()
 def vcd_next_change_after(path: str, signal_name: str, timestamp: Union[str, float, int]) -> str:
     """
     Return the first change of a signal after a timestamp.
@@ -466,7 +490,7 @@ def vcd_next_change_after(path: str, signal_name: str, timestamp: Union[str, flo
 ###### vcd Get the first edge after a timestamp
 ######################################################################
 ### @TODO need add the first value and the value after the transition in the output results
-#def vcd_prev_change_before(path: str, signal_name: str, timestamp: Union[str, float, int]) -> Optional[Tuple[float, Any]]:
+@mcp.tool()
 def vcd_prev_change_before(path: str, signal_name: str, timestamp: Union[str, float, int]) -> str:
     """
     Return the first change of a signal before a timestamp.
@@ -491,7 +515,7 @@ def vcd_prev_change_before(path: str, signal_name: str, timestamp: Union[str, fl
 ###### vcd Search for a vlaue of a singal
 ######################################################################
 ### @TODO  need to add the entire timeframe where the signal has the extracted value not only the transition
-#def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Union[str, float, int]] = None, end: Optional[Union[str, float, int]] = None) -> List[float]:
+@mcp.tool()
 def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Union[str, float, int]] = None, end: Optional[Union[str, float, int]] = None) -> str:
     """
     Return if a signal has encountered a specific value during the simulation
@@ -501,15 +525,18 @@ def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Un
         vcdobj = VCDVCD(path, store_tvs=True, store_scopes=False)
     else:
         return f"Could not open the VCD file"
-    changes = vcd_get_signal_values_in_timeframe(path, signal_name, start, end, include_start_prev=False)
+    changes = vcd_get_signal_values_in_timeframe_scal(path, signal_name, start, end, include_start_prev=False)
     target = value.lower() if isinstance(value, str) else value
     #return [t for (t, v) in changes if (v.lower() if isinstance(v, str) else v) == target]
     return f"The signal {signal_name}  hit the value {value} at {[t for (t, v) in changes if (v.lower() if isinstance(v, str) else v) == target]}"
+    #temp = str([t for (t, v) in changes if (v.lower() if isinstance(v, str) else v) == target])
+    #temp = f"The signal {signal_name}  hit the value {value} at {temp}"
+    #return
 
 ######################################################################
 ###### vcd get a list of signals values at a specific timestamp
 ######################################################################
-#def vcd_get_signals_values_at_timestamp(path: str, signal_names: Iterable[str], timestamp: Union[str, float, int], method: str = "previous") -> Dict[str, Any]:
+@mcp.tool()
 def vcd_get_signals_values_at_timestamp(path: str, signal_names: Iterable[str], timestamp: Union[str, float, int], method: str = "previous") -> str:
     """
     Return a dict {signal_name: value_at_timestamp} for multiple signals.
@@ -549,8 +576,7 @@ def vcd_get_signals_values_at_timestamp(path: str, signal_names: Iterable[str], 
 ######################################################################
 ###### vcd get a list of signals values at a specific time frame
 ######################################################################
-
-#def vcd_get_signals_aligned_in_window(path: str, signal_names: Iterable[str], start: Union[str, float, int], end: Union[str, float, int]) -> Tuple[List[float], Dict[str, List[Any]]]:
+@mcp.tool()
 def vcd_get_signals_aligned_in_window(path: str, signal_names: Iterable[str], start: Union[str, float, int], end: Union[str, float, int]) -> str:
     """
     Returns (times, values_by_signal):
@@ -621,9 +647,9 @@ def vcd_get_signals_aligned_in_window(path: str, signal_names: Iterable[str], st
         values_by_signal[sig] = vals
 
     #return timeline, values_by_signal
-    temp = f"Times: {timeline}\n"
+    temp = f"Times:\t{timeline}\n"
     for s, vals in values_by_signal.items():
-        temp = temp + f"{s},{vals}"
+        temp = temp + f"{s}:\t{vals}\n"
     return temp
 
 ######################################################################

@@ -1,0 +1,143 @@
+
+//def parse_log_for_errors(log_path: str, error_regx : str = r"ERROR:\s+([\d\w\.\/]+)\s+at\s+line\s+(\d+)") -> str:
+    """Finds the VCD file and any Verilog errors in the log."""
+
+//def find_first_uvm_error(log_path: str) -> str:
+    """Finds the line number of the first UVM_ERROR or UVM_FATAL."""
+
+//def get_error_context(log_path: str, error_line: int, window: int = 20) -> str:
+    """Extracts the 'N' lines preceding an error for LLM analysis."""
+
+def search_log_keyword(log_path: str, keyword: str, context_lines: int = 10) -> str:
+    """
+    Searches for a keyword in the log and returns the matching line
+    plus surrounding context. Useful for finding UVM_ERRORs and file paths.
+    """
+
+def get_source_snippet(file_path: str, line_number: int, context: int = 5) -> str:
+    """
+    Opens a source code file and extracts the code around a specific line.
+    """
+
+def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> str:
+    """
+    Return total simulation time in seconds (float).
+    Accepts a VCD file path.
+    """
+
+def vcd_get_timescale_scal(path: str, store_scopes: bool = False) -> str:
+    """ Get the magnitude and the unit of the timescale of a vcd file and output as two string format """
+
+def vcd_get_timescale_str(path: str, store_scopes: bool = False) -> str:
+    """ Get the magnitude and the unit of the timescale of a vcd file and output as two string format """
+
+def list_vcd_signals(path: str, pattern: str = "", store_scopes: bool = False) -> str:
+    """Returns a list of all signals in the VCD matching a pattern (e.g., 'dut')."""
+
+def vcd_get_signal_value_at_timestamp(path: str, signal_name: str, timestamp: Union[str, float, int], method: str = "previous") -> str:
+    """
+    Return the value of a signal at a specific timestamp.
+    the input is the signal name and the timestamp
+    """
+
+def vcd_get_signal_value_at_timestamp_scal(path: str, signal_name: str, timestamp: Union[str, float, int], method: str = "previous") -> Any:
+    """
+        Return the value of a signal at a specific timestamp.
+        the input is the signal name and the timestamp
+        """
+def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], include_start_prev: bool = True) -> str:
+    """
+    Return the values of a signal at a specific time window.
+    the input is the signal name and the time window high and low limit
+    """
+
+def vcd_get_signal_values_in_timeframe_scal(path: str, signal_name: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], include_start_prev: bool = True) -> Any:
+    """
+    Return the values of a signal at a specific time window.
+    the input is the signal name and the time window high and low limit
+    """
+
+# @TODO this only supportes signals and not bus, need to update the function to support bus with changes on the bus instead of edges
+def vcd_count_signal_all_transitions(path: str, signal_name: str, edge: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], bit_index: Optional[int] = None) -> str:
+    """
+    Return the count of the number of a signal edges in a time window
+    the input is the signal name, the edge, the start and finsh time limit of the time window and a bit index if it is a bus
+    """
+
+def vcd_next_change_after(path: str, signal_name: str, timestamp: Union[str, float, int]) -> str:
+    """
+    Return the first change of a signal after a timestamp.
+    the input is the signal name and the timestamp
+    """
+
+### @TODO need add the first value and the value after the transition in the output results
+def vcd_prev_change_before(path: str, signal_name: str, timestamp: Union[str, float, int]) -> str:
+    """
+    Return the first change of a signal before a timestamp.
+    the input is the signal name and the timestamp
+    """
+
+### @TODO  need to add the entire timeframe where the signal has the extracted value not only the transition
+def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Union[str, float, int]] = None, end: Optional[Union[str, float, int]] = None) -> str:
+    """
+    Return if a signal has encountered a specific value during the simulation
+    the input is the signal name and the value to be searched
+    """
+
+//def vcd_get_signals_values_at_timestamp(path: str, signal_names: Iterable[str], timestamp: Union[str, float, int], method: str = "previous") -> str:
+    """
+    Return a dict {signal_name: value_at_timestamp} for multiple signals.
+    - method='previous': last value at or before timestamp (step/hold semantics)
+    - method='exact': only return a value if there is an event exactly at timestamp; else None
+    """
+
+//def vcd_get_signals_aligned_in_window(path: str, signal_names: Iterable[str], start: Union[str, float, int], end: Union[str, float, int]) -> str:
+    """
+    Returns (times, values_by_signal):
+    - times: sorted list including 'start' and all change times of the requested signals
+             that fall within (start, end].
+    - values_by_signal: {signal_name: [v0, v1, ...]} aligned to 'times'
+      using step/hold semantics (previous value up to next change).
+    """
+
+######################################################################
+######  search for a state of a signal in a timeframe
+######################################################################
+# need to implement the search for a state and values for a signal in a timeframe and get back the time
+# Logic-Based Search
+# @TODO not implemented yet
+
+
+######################################################################
+######  stable interval search for a signal in a timeframe
+######################################################################
+# to search for how long a signal is stable without gliches for setup and hold time
+# Protocol-Specific Analysis
+# @TODO not implemented yet
+
+######################################################################
+######  map logic values to states like IDLE, ready and others with connection to a source code or a package
+######################################################################
+# Bus & Enum Interpretation
+# @TODO not implemented yet
+
+
+######################################################################
+######  give the related signals in a module based on the input signal
+######################################################################
+# Hierarchy Navigation
+# @TODO not implemented yet
+
+
+######################################################################
+######  check two signals edges
+######################################################################
+# context based to check if signal A toggle  before signal B or after in a time window
+# @TODO not implemented yet
+
+
+######################################################################
+######  multiple signals status in a single timestamp
+######################################################################
+# timestamp value for a list of signals
+# @TODO not implemented yet

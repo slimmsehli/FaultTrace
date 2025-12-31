@@ -23,7 +23,7 @@ log_file = "./simulation/sim.log"
 vcd_file = "./simulation/sim.vcd"
 
 async def run_agent_loop():
-    server_params = StdioServerParameters(command="python", args=["server_test.py"])
+    server_params = StdioServerParameters(command="python", args=["mcp_server_std_wrapper.py"])
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
@@ -35,16 +35,34 @@ async def run_agent_loop():
                 {
                     "role": "system",
                     "content": (
-                        "You are a Senior Silicon Debug Engineer. Your goal is to find the root cause of failures using logs, source, and VCD.\n\n"
-                        "DEBUGGING PROTOCOL:\n"
-                        "1. **Log Analysis**: Search the log for 'UVM_ERROR' or 'FATAL'. Identify the file, line number, and simulation TIMESTAMP.\n"
-                        "2. **Source Inspection**: Read the source code around that line. Identify the signals involved in the failing logic.\n"
-                        "3. **Waveform Correlation**: \n"
-                        "   - Use 'vcd_get_timescale' to understand the simulation units.\n"
-                        "   - Map source signals to VCD hierarchy. If a signal 'out' is in 'top.dut', query 'top.dut.out'.\n"
-                        "   - Use 'vcd_get_signal_value_at_timestamp' to check the actual hardware state at the time of failure.\n"
-                        "4. **Root Cause**: Compare the 'Expected' value (from source logic) vs 'Actual' value (from VCD). Explain the discrepancy.\n"
-                        f"the log file is ./simulation/sim.log and the vcd file for waves is ./simulation/sim.vcd and all the files paths are from the folder simulation"
+                        "**Role:** You are an expert RTL Verification Engineer specializing in UVM (Universal Verification Methodology) and SystemVerilog. Your goal is to identify the root cause of UVM_ERRORs and suggest precise fixes.\n"
+                        ""
+                        "**Available Environment:**"
+                        "You have access to an MCP server providing tools for file reading, log analysis and vcd waveform file parsing. You MUST use these tools to investigate the codebase and simulation artifacts.\n"
+                        "\n"
+                        "**Debugging Protocol:** \n"
+                        "1. **Log Analysis:** Start by reading the simulation log. Use tools to find the specific UVM_ERROR message and the simulation time it occurred.\n"
+                        "2. **Context Gathering:** Identify which UVM component (driver, monitor, scoreboard) reported the error. and in which file the component is declared, the signals to look for.\n"
+                        "3. **Traceability:** Use the different tools to \n"
+                        "    - check the available signals list in the vcd file before looking for more details about signals in the vcd itself.\n"
+                        "    - Open source files and extract the needed context and code related to the error and for debug from them.\n"
+                        "    - Examine the relevant SystemVerilog/UVM files.\n"
+                        "    - Check the configuration database (uvm_config_db) and factory overrides if the error relates to connectivity or types.\n"
+                        "    - Understand the testbench structure and the components.\n"
+                        "    - use tools to extract signals transitions and values during the simulation to identify the issue.\n"
+                        "4. **Hypothesis:** Formulate a theory on why the error occurred (e.g., protocol violation, timing mismatch, or incorrect constraint).\n"
+                        "5. **Verification:** Use your tools to check related source code files, log files and waveform vcd files to confirm your hypothesis.\n"
+                        "\n"
+                        "**Constraints:** \n"
+                        "- The vcd file does not contain the waveforms of the signals and variables inside the uvm classes .\n"
+                        "- The VCD file contains only the signals from the modules and the interfaces.\n"
+                        "- Do not hallucinate file paths check if the paths already exist in the environment files.\n"
+                        "- Always provide the file path and line number when suggesting a fix.\n"
+                        "- If the error is due to a DUT (Device Under Test) bug vs. a Testbench bug, clearly state your reasoning.\n"
+                        "\n"
+                        "**Tone:** Professional, analytical, and concise. Focus on technical evidence over general advice.\n"
+                        "all files are inside the directory ./simulation \n"
+                        "the name of the log file and the waveform vcd file are sim.log and sim.vcd"
                     )
                 },
                 {
@@ -55,6 +73,7 @@ async def run_agent_loop():
 
             # 2. Define the tools for OpenAI
             tools = [
+                # search_log_keyword
                 {
                     "type": "function",
                     "function": {
@@ -71,6 +90,7 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # get_source_snippet
                 {
                     "type": "function",
                     "function": {
@@ -87,6 +107,7 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # vcd_get_simulation_time
                 {
                     "type": "function",
                     "function": {
@@ -101,10 +122,11 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # vcd_get_timescale_str
                 {
                     "type": "function",
                     "function": {
-                        "name": "vcd_get_timescale",
+                        "name": "vcd_get_timescale_str",
                         "description": "Returns the magnitude and unit of the simulation timescale (e.g., 1 ns).",
                         "parameters": {
                             "type": "object",
@@ -115,6 +137,7 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # vcd_get_signal_value_at_timestamp
                 {
                     "type": "function",
                     "function": {
@@ -132,6 +155,7 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # vcd_get_signal_values_in_timeframe
                 {
                     "type": "function",
                     "function": {
@@ -142,13 +166,14 @@ async def run_agent_loop():
                             "properties": {
                                 "path": {"type": "string"},
                                 "signal_name": {"type": "string"},
-                                "start": {"type": "number"},
-                                "end": {"type": "number"}
+                                "start": {"type": "integer"},
+                                "end": {"type": "integer"}
                             },
                             "required": ["path", "signal_name", "start", "end"]
                         }
                     }
                 },
+                # vcd_count_signal_all_transitions
                 {
                     "type": "function",
                     "function": {
@@ -169,6 +194,7 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # vcd_next_change_after
                 {
                     "type": "function",
                     "function": {
@@ -185,6 +211,7 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # vcd_prev_change_before
                 {
                     "type": "function",
                     "function": {
@@ -201,6 +228,7 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # vcd_search_value
                 {
                     "type": "function",
                     "function": {
@@ -220,6 +248,7 @@ async def run_agent_loop():
                         }
                     }
                 },
+                # list_vcd_signals
                 {
                     "type": "function",
                     "function": {
@@ -232,6 +261,52 @@ async def run_agent_loop():
                                 "pattern": {"type": "string"}
                             },
                             "required": ["path"]
+                        }
+                    }
+                },
+                # vcd_get_signals_aligned_in_window
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "vcd_get_signals_aligned_in_window",
+                        "description": """
+                            Returns (times, values_by_signal):
+                            - times: sorted list including 'start' and all change times of the requested signals
+                                     that fall within (start, end].
+                            - values_by_signal: {signal_name: [v0, v1, ...]} aligned to 'times'
+                              using step/hold semantics (previous value up to next change).
+                            """,
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "path": {"type": "string"},
+                                "signal_names": {"type": "string"},
+                                "start": {"type": "integer"},
+                                "end": {"type": "integer"}
+
+                            },
+                            "required": ["path", "signal_names", "start", "end"]
+                        }
+                    }
+                },
+                # vcd_get_signals_values_at_timestamp
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "vcd_get_signals_values_at_timestamp",
+                        "description": """
+                            Return a dict {signal_name: value_at_timestamp} for multiple signals.
+                            - method='previous': last value at or before timestamp (step/hold semantics)
+                            - method='exact': only return a value if there is an event exactly at timestamp; else None
+                            """,
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "path": {"type": "string"},
+                                "signal_names": {"type": "string"},
+                                "timestamp": {"type": "integer"}
+                            },
+                            "required": ["path", "signal_names", "timestamp"]
                         }
                     }
                 }
@@ -272,7 +347,7 @@ async def run_agent_loop():
 
                     # Execute the MCP tool (which calls your vcdvcd wrapper)
                     result = await session.call_tool(fname, fargs)
-                    print(f"\n\n[Iteration {i + 1}] LLM results from function {result}")
+                    print(f"\n\n[Iteration {i + 1}] LLM results from function \n////\n {result} \n////\n")
 
                     messages.append({
                         "role": "tool",
