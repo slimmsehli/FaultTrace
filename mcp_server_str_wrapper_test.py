@@ -10,7 +10,7 @@
 
 from typing import Union, Optional, Dict
 from vcdvcd import VCDVCD
-import mcp_server_std_wrapper as mcp_server
+import mcp_server_str_wrapper as mcp_server
 
 def main():
 		logfile = "simulation/sim.log"

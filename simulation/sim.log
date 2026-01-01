@@ -1,4 +1,4 @@
-Command: /global/scsg_eu_verif/slim/test_py/RCAnalysis/simulation/simdir/./simv +vcs+lic+wait +UVM_NO_RELNOTES -l sim.log
+Command: C:\Users\dmseh\OneDrive\Desktop\ai\RCAnalysis\simv +vcs+lic+wait +UVM_NO_RELNOTES -l sim.log
 Chronologic VCS simulator copyright 1991-2025
 Contains Synopsys proprietary information.
 Compiler version X-2025.06-SP2_Full64; Runtime version X-2025.06-SP2_Full64;  Dec 23 10:01 2025

@@ -15,15 +15,24 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from dotenv import load_dotenv
 
+# fo debugging messages
+
+#
 load_dotenv()
 
+# open AI client
 client = OpenAI()
 
-log_file = "./simulation/sim.log"
-vcd_file = "./simulation/sim.vcd"
+### this part was added to load the system prompt from external file
+from pathlib import Path
+system_prompt = Path("system_prompt").read_text()
+
+# note : log file and vcd file are always in the "./simulation" directory for now
+# also the compilation script , the log file, the vcd file are given to the agent manually in fixed format
 
 async def run_agent_loop():
-    server_params = StdioServerParameters(command="python", args=["mcp_server_std_wrapper.py"])
+    # note : call the MCP server that contains all the tools
+    server_params = StdioServerParameters(command="python", args=["mcp_server_str_wrapper.py"])
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
@@ -33,36 +42,7 @@ async def run_agent_loop():
             messages = [
                 {
                     "role": "system",
-                    "content": (
-                        "**Role:** You are an expert RTL Verification Engineer specializing in UVM (Universal Verification Methodology) and SystemVerilog. Your goal is to identify the root cause of UVM_ERRORs and suggest precise fixes.\n"
-                        ""
-                        "**Available Environment:**"
-                        "You have access to an MCP server providing tools for file reading, log analysis and vcd waveform file parsing. You MUST use these tools to investigate the codebase and simulation artifacts.\n"
-                        "\n"
-                        "**Debugging Protocol:** \n"
-                        "1. **Log Analysis:** Start by reading the simulation log. Use tools to find the specific UVM_ERROR message and the simulation time it occurred.\n"
-                        "2. **Context Gathering:** Identify which UVM component (driver, monitor, scoreboard) reported the error. and in which file the component is declared, the signals to look for.\n"
-                        "3. **Traceability:** Use the different tools to \n"
-                        "    - check the available signals list in the vcd file before looking for more details about signals in the vcd itself.\n"
-                        "    - Open source files and extract the needed context and code related to the error and for debug from them.\n"
-                        "    - Examine the relevant SystemVerilog/UVM files.\n"
-                        "    - Check the configuration database (uvm_config_db) and factory overrides if the error relates to connectivity or types.\n"
-                        "    - Understand the testbench structure and the components.\n"
-                        "    - use tools to extract signals transitions and values during the simulation to identify the issue.\n"
-                        "4. **Hypothesis:** Formulate a theory on why the error occurred (e.g., protocol violation, timing mismatch, or incorrect constraint).\n"
-                        "5. **Verification:** Use your tools to check related source code files, log files and waveform vcd files to confirm your hypothesis.\n"
-                        "\n"
-                        "**Constraints:** \n"
-                        "- The vcd file does not contain the waveforms of the signals and variables inside the uvm classes .\n"
-                        "- The VCD file contains only the signals from the modules and the interfaces.\n"
-                        "- Do not hallucinate file paths check if the paths already exist in the environment files.\n"
-                        "- Always provide the file path and line number when suggesting a fix.\n"
-                        "- If the error is due to a DUT (Device Under Test) bug vs. a Testbench bug, clearly state your reasoning.\n"
-                        "\n"
-                        "**Tone:** Professional, analytical, and concise. Focus on technical evidence over general advice.\n"
-                        "all files are inside the directory ./simulation \n"
-                        "the name of the log file and the waveform vcd file are sim.log and sim.vcd"
-                    )
+                    "content": system_prompt
                 },
                 {
                     "role": "user",
@@ -311,47 +291,49 @@ async def run_agent_loop():
                 }
             ]
 
-            ### Agent ReAct loop
+            ### Agent loop
 
-            # max iterations ofr the agent thingking loop
+            # note : max iterations ofr the agent thingking loop
             max_iterations = 15
 
             # Main loop
             for i in range(max_iterations):
-                print(f"\n\n\n\n[Iteration {i + 1}] Thinking...")
-
+                print(f"\n[Iteration {i + 1}] [AGENT] : Thinking...")
+                # note : get a response from the LLM
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=messages,
                     tools=tools,
                     tool_choice="auto"
                 )
-
+                ## note : add the LLM response to the message history
                 response_message = response.choices[0].message
                 messages.append(response_message)
 
-                # this prints the agent inner thinking
+                # debug : this prints the response of the LLM aka the inner thinking of the agent
                 if response_message.content:
-                    print(f"\n\n[REASONING]: {response_message.content}")
+                    print(f"\n[Iteration {i + 1}] [AGENT] : {response_message.content}")
 
-                # Check if the LLM wants to finish or call a tool
+                # debug : check if the agent want to end the diagnosis so we end the program
                 if not response_message.tool_calls:
-                    print("\n\n--- Final Diagnosis ---")
+                    print(f"\n[Iteration {i + 1}] [AGENT] : Root Cause Analysis Ended ")
                     print(response_message.content)
                     break
 
-                # Handle tool calls
+                # note : handleing tools calls
                 for tool_call in response_message.tool_calls:
+                    # debug : extracting the tool name and arguments to be passed to the tool function
                     fname = tool_call.function.name
                     fargs = json.loads(tool_call.function.arguments)
 
-                    # LOGGING FOR YOU TO TRACK PROGRESS
-                    print(f"\n\n[Iteration {i + 1}] LLM calls {fname}, fargs {fargs}")
+                    # debug : printing the function name and arguments to be called :  this is for debug purposes
+                    print(f"\n[Iteration {i + 1}] [TOOL] : Calling Tool: {fname}, fargs: {fargs}")
 
-                    # Execute the MCP tool (which calls your vcdvcd wrapper)
+                    # debug : execute the tool from the MCP server
                     result = await session.call_tool(fname, fargs)
-                    print(f"\n\n[Iteration {i + 1}] LLM results from function \n////\n {result} \n////\n")
+                    print(f"\n[Iteration {i + 1}] [TOOL] : Tool response: \n////\n {result} \n////\n")
 
+                    # note : add the tool response to the message history
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call.id,
