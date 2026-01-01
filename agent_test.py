@@ -2,7 +2,7 @@
 #
 #
 #
-# This is a test for the ai main engine with a loop for response
+# This is a test for the ai main agent with a loop for response
 #
 #
 #
@@ -29,8 +29,7 @@ async def run_agent_loop():
         async with ClientSession(read, write) as session:
             await session.initialize()
 
-            # 1. Setup the Agent's "Memory" and specialized instructions
-            # Wrap the dictionary in a list [ ]
+            ### System prompt for the Agent
             messages = [
                 {
                     "role": "system",
@@ -71,7 +70,7 @@ async def run_agent_loop():
                 }
             ]
 
-            # 2. Define the tools for OpenAI
+            ### Tools list defined on the mcp server
             tools = [
                 # search_log_keyword
                 {
@@ -312,8 +311,12 @@ async def run_agent_loop():
                 }
             ]
 
-            # 3. The ReAct Loop
+            ### Agent ReAct loop
+
+            # max iterations ofr the agent thingking loop
             max_iterations = 15
+
+            # Main loop
             for i in range(max_iterations):
                 print(f"\n\n\n\n[Iteration {i + 1}] Thinking...")
 
