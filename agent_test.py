@@ -327,11 +327,11 @@ async def run_agent_loop():
                     fargs = json.loads(tool_call.function.arguments)
 
                     # debug : printing the function name and arguments to be called :  this is for debug purposes
-                    print(f"\n[Iteration {i + 1}] [TOOL] : Calling Tool: {fname}, fargs: {fargs}")
+                    print(f"\n[Iteration {i + 1}] [TOOL] : Tool Calling : {fname}, fargs: {fargs}")
 
                     # debug : execute the tool from the MCP server
                     result = await session.call_tool(fname, fargs)
-                    print(f"\n[Iteration {i + 1}] [TOOL] : Tool response: \n////\n {result} \n////\n")
+                    #print(f"\n[Iteration {i + 1}] [TOOL] : Tool response : \n////\n {result.} \n////\n")
 
                     # note : add the tool response to the message history
                     messages.append({
