@@ -55,6 +55,7 @@ def ls(input: Dict[str, Any]) -> Dict[str, Any]:
     """
     Run `ls -lrth` on a path and return raw terminal output as a dict contains the path, the command and the output.
     """
+    return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
 
     if not os.path.exists(path):
@@ -74,17 +75,26 @@ def ls(input: Dict[str, Any]) -> Dict[str, Any]:
     # IMPORTANT: preserve formatting exactly
     output = result.stdout.rstrip("\n")
 
-    return {
+    res = {
         "path": path,
         "command": "ls -lrth",
         "output": output
     }
+    if return_dict==1:
+      return res
+    else:
+      temp =        f" PATH 		: " + res["path"] + "\n"
+      temp = temp + f" COMMAND 	: " + res["command"] + "\n"
+      temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
+      return temp
+    
 
 def grep (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
     Run `grep {opts} {regr} {path}` on a path and return raw terminal output.
     """
+    return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
     opts = input.get("opts", ".")
     regr = input.get("regr", ".")
@@ -106,11 +116,18 @@ def grep (input: Dict[str, Any]) -> Dict[str, Any]:
     # IMPORTANT: preserve formatting exactly
     output = result.stdout.rstrip("\n")
     
-    return {
+    res = {
         "path": path,
         "command": f"grep {opts} {regr} {path}" ,
         "output": output        
     }
+    if return_dict==1:
+      return res
+    else:
+      temp =        f" PATH 		: " + res["path"] + "\n"
+      temp = temp + f" COMMAND 	: " + res["command"] + "\n"
+      temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
+      return temp
 
 
 # @TODO I need to change the argv passed tot he subprocess for the moment this is working!!!
@@ -119,6 +136,7 @@ def find (input: Dict[str, Any]) -> Dict[str, Any]:
     """
     Run `find {path} {args} ` on a path and return raw terminal output.
     """
+    return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
     args = input.get("args")
     #print (f"args are : ", args)
@@ -144,11 +162,19 @@ def find (input: Dict[str, Any]) -> Dict[str, Any]:
        #raise ToolError(result.stderr.strip())
 
     output = result.stdout.rstrip("\n")
-    return {
-        "path": path,
-        "command": cmd ,
-        "output": output        
-    }
+    res = {
+      "path": path,
+      "command": cmd ,
+      "output": output        
+      }
+    if return_dict==1:
+      return res
+    else:
+      temp =        f" PATH 		: " + res["path"] + "\n"
+      temp = temp + f" COMMAND 	: " + res["command"] + "\n"
+      temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
+      return temp
+    
 
 if __name__ == "__main__":
     mcp.run()
