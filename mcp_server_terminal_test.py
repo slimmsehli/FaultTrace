@@ -19,7 +19,7 @@ def main():
 		logfile = "simulation/sim.log"
 		sourcecode = "simulation/design.sv"
 		vcd_path="simulation/sim.vcd"
-
+		"""
 		print(f"\n##################################################################################################")
 		print(f"#  ")
 		print(f"#  TESTING : unix terminal functions")
@@ -39,6 +39,43 @@ def main():
 		print(f"##################################################################################################")
 		print(f"### TEST3 : find ")
 		result = mcp_server.find({"path":"", "args":'-name "mcp_server*.py" -type f'})
+		print(result)
+		
+		print(f"##################################################################################################")
+		print(f"### TEST4 : cat ")
+		result = mcp_server.cat({"path":"README.md", "args":""})
+		print(result)
+		
+		print(f"##################################################################################################")
+		print(f"### TEST5 : head ")
+		result = mcp_server.head({"path":"README.md", "args":""})
+		print(result)
+		
+		print(f"##################################################################################################")
+		print(f"### TEST6 : tail ")
+		result = mcp_server.tail({"path":"README.md", "args":""})
+		print(result)
+		
+		print(f"##################################################################################################")
+		print(f"### TEST7 : ps ")
+		result = mcp_server.ps({"args":"aux"})
+		print(result)
+		
+		print(f"##################################################################################################")
+		print(f"### TEST8 : which ")
+		result = mcp_server.which({"args":"vcs"})
+		print(result)
+		
+		print(f"##################################################################################################")
+		print(f"### TEST9 : env ")
+		result = mcp_server.env({"args":""})
+		print(result)
+		"""
+		print(f"##################################################################################################")
+		print(f"### TEST10 : diff ")
+		result = mcp_server.diff({"path1":"mcp_server.py","path2":"mcp_server_str_wrapper_test.py","args":""})
+		print(result)
+		result = mcp_server.diff({"path1":"simulation","path2":"Specs","args":""}) # for dirrectories
 		print(result)
 		
 
