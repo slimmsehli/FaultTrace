@@ -73,10 +73,10 @@ def main():
 		
 		print(f"##################################################################################################")
 		print(f"### TEST10 : diff ")
-		result = mcp_server.diff({"path1":"mcp_server.py","path2":"mcp_server_str_wrapper_test.py","args":""})
-		print(result)
-		result = mcp_server.diff({"path1":"simulation","path2":"Specs","args":""}) # for dirrectories
-		print(result)
+		#result = mcp_server.diff({"path1":"mcp_server.py","path2":"mcp_server_str_wrapper_test.py","args":""})
+		#print(result)
+		#result = mcp_server.diff({"path1":"simulation","path2":"Specs","args":""}) # for dirrectories
+		#print(result)
 		
 
     
