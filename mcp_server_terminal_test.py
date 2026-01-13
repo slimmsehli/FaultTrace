@@ -4,7 +4,7 @@
 #
 # This is a test for the mcp server functions based on singal function calls  
 #
-#
+# ls, grep, find, cat, head, tail, ps, which, env, diff
 #
 ######################################################
 

@@ -1,0 +1,497 @@
+
+{
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "ls",
+        "description": "Run `ls -lrth {path}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Directory to list"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 5000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": ["path"]
+        },
+        "x-exec": {
+          "command": "ls",
+          "argsMap": [
+            { "flag": "-l" },
+            { "flag": "-r" },
+            { "flag": "-t" },
+            { "flag": "-h" },
+            { "value": "path" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " PATH\\t: {{path}}\\n COMMAND\\t: {{command}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "success",
+            ">0": "error"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "grep",
+        "description": "Run `grep {opts} {regr} {path}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "opts": {
+              "type": "string",
+              "description": "Extra switches for grep (e.g., '-r -i')"
+            },
+            "regr": {
+              "type": "string",
+              "description": "Pattern or regex to search"
+            },
+            "path": {
+              "type": "string",
+              "description": "File or directory to search"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 8000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": ["regr", "path"]
+        },
+        "x-exec": {
+          "command": "grep",
+          "argsMap": [
+            { "raw": "opts" },
+            { "value": "regr" },
+            { "value": "path" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " PATH\\t: {{path}}\\n PATTERN\\t: {{regr}}\\n OPTS\\t: {{opts}}\\n COMMAND\\t: {{command}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "match found",
+            "1": "no matches",
+            ">1": "error occurred"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "find",
+        "description": "Run `find {path} {args}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Starting directory"
+            },
+            "args": {
+              "type": "string",
+              "description": "Extra switches and predicates for find (e.g., '-name \"*.py\" -maxdepth 2')"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 10000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": ["path"]
+        },
+        "x-exec": {
+          "command": "find",
+          "argsMap": [
+            { "value": "path" },
+            { "raw": "args" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " PATH\\t: {{path}}\\n ARGS\\t: {{args}}\\n COMMAND\\t: {{command}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "success",
+            ">0": "error occurred"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "cat",
+        "description": "Run `cat {file} {args}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "File path to read"
+            },
+            "args": {
+              "type": "string",
+              "description": "Extra switches for cat (rarely used)"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 5000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": ["file"]
+        },
+        "x-exec": {
+          "command": "cat",
+          "argsMap": [
+            { "raw": "args" },
+            { "value": "file" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "pathGuards": {
+            "requireExists": ["file"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{file}}\\n ARGS\\t: {{args}}\\n COMMAND\\t: {{command}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "success",
+            ">0": "error occurred"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "head",
+        "description": "Run `head {file} {args}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "File path to read"
+            },
+            "args": {
+              "type": "string",
+              "description": "Extra switches for head (e.g., '-n 50')"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 5000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": ["file"]
+        },
+        "x-exec": {
+          "command": "head",
+          "argsMap": [
+            { "raw": "args" },
+            { "value": "file" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "pathGuards": {
+            "requireExists": ["file"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{file}}\\n ARGS\\t: {{args}}\\n COMMAND\\t: {{command}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "success",
+            ">0": "error occurred"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "tail",
+        "description": "Run `tail {file} {args}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "File path to read"
+            },
+            "args": {
+              "type": "string",
+              "description": "Extra switches for tail (e.g., '-n 100', '-f')"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 0,
+              "minimum": 0,
+              "maximum": 600000
+            }
+          },
+          "required": ["file"]
+        },
+        "x-exec": {
+          "command": "tail",
+          "argsMap": [
+            { "raw": "args" },
+            { "value": "file" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "pathGuards": {
+            "requireExists": ["file"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{file}}\\n ARGS\\t: {{args}}\\n COMMAND\\t: {{command}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "success or following",
+            ">0": "error occurred"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "ps",
+        "description": "Run `ps {args}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "args": {
+              "type": "string",
+              "description": "Extra switches for ps (e.g., 'aux', '-ef')"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 5000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": []
+        },
+        "x-exec": {
+          "command": "ps",
+          "argsMap": [
+            { "raw": "args" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "resultFormat": {
+            "textTemplate": " COMMAND\\t: {{command}}\\n ARGS\\t: {{args}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "success",
+            ">0": "error occurred"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "which",
+        "description": "Run `which {args}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "args": {
+              "type": "string",
+              "description": "Command(s) to locate (e.g., 'python', 'bash')"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 5000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": []
+        },
+        "x-exec": {
+          "command": "which",
+          "argsMap": [
+            { "raw": "args" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "resultFormat": {
+            "textTemplate": " COMMAND\\t: {{command}}\\n ARGS\\t: {{args}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "found",
+            ">0": "not found or error"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "env",
+        "description": "Run `env {args}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "args": {
+              "type": "string",
+              "description": "Extra switches or variable assignments for env"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 5000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": []
+        },
+        "x-exec": {
+          "command": "env",
+          "argsMap": [
+            { "raw": "args" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "resultFormat": {
+            "textTemplate": " COMMAND\\t: {{command}}\\n ARGS\\t: {{args}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "success",
+            ">0": "error occurred"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "diff",
+        "description": "Run `diff {args} {path1} {path2}` and return formatted output as a string.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path1": {
+              "type": "string",
+              "description": "First file or directory to compare"
+            },
+            "path2": {
+              "type": "string",
+              "description": "Second file or directory to compare"
+            },
+            "args": {
+              "type": "string",
+              "description": "Extra switches for diff (e.g., '-u -r -w'). Runner should split safely."
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "description": "Timeout in milliseconds",
+              "default": 5000,
+              "minimum": 100,
+              "maximum": 60000
+            }
+          },
+          "required": ["path1", "path2"]
+        },
+        "x-exec": {
+          "command": "diff",
+          "argsMap": [
+            { "raw": "args" },
+            { "value": "path1" },
+            { "value": "path2" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "cwd": ".",
+          "envAllowlist": [],
+          "streaming": false,
+          "pathGuards": {
+            "requireExists": ["path1", "path2"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " PATH1\\t: {{path1}}\\n PATH2\\t: {{path2}}\\n COMMAND\\t: {{command}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          },
+          "exitCodes": {
+            "0": "no differences found",
+            "1": "differences found (valid)",
+            ">1": "error occurred"
+          }
+        }
+      }
+    }
+  ]
+}
+

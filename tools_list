@@ -1,0 +1,32 @@
+#
+
+def ls(input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `ls -lrth {path}` in the terminal and return terminal output.
+
+def grep (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `grep {opts} {regr} {path}` in the terminal and return terminal output.
+
+def find (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `find {path} {args} ` in the terminal and return terminal output.
+
+def cat (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `cat {file path} {args} ` in the terminal and return terminal output.
+
+def head (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `head {file path} {args}` in the terminal and return terminal output.
+
+def tail (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `tail {file path} {args}` in the terminal and return terminal output.
+
+def ps (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `ps {args}` in the terminal and return terminal output.
+
+def which (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `which {args}` in the terminal and return terminal output.
+
+def env (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `env {args}` in the terminal and return terminal output.
+
+def diff (input: Dict[str, Any]) -> Dict[str, Any]:
+    This function Runs `diff {args} {path1} {path2} ` in the terminal and return terminal output.
+

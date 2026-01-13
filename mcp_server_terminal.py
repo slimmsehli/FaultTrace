@@ -38,8 +38,6 @@ from typing import Dict, Any
 
 WORKSPACE_ROOT = os.path.abspath(os.environ.get("PWD", "."))
 
-class ToolError(Exception):
-    pass
 
 def _normalize_and_guard(path: str) -> str:
     """Ensure path is within the allowed workspace."""
@@ -50,10 +48,11 @@ def _normalize_and_guard(path: str) -> str:
         raise ToolError(f"Path escapes workspace: {path}")
     return p
 
+@mcp.tool()
 def ls(input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `ls -lrth` on a path and return raw terminal output as a dict contains the path, the command and the output.
+    This function Runs `ls -lrth {path}` in the terminal and return terminal output.
     """
     return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
@@ -72,7 +71,6 @@ def ls(input: Dict[str, Any]) -> Dict[str, Any]:
     if result.returncode != 0:
         raise ToolError(result.stderr.strip())
 
-    # IMPORTANT: preserve formatting exactly
     output = result.stdout.rstrip("\n")
 
     res = {
@@ -88,11 +86,11 @@ def ls(input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
       return temp
     
-
+@mcp.tool()
 def grep (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `grep {opts} {regr} {path}` on a path and return raw terminal output.
+    This function Runs `grep {opts} {regr} {path}` in the terminal and return terminal output.
     """
     return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
@@ -131,10 +129,11 @@ def grep (input: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # @TODO I need to change the argv passed tot he subprocess for the moment this is working!!!
+@mcp.tool()
 def find (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `find {path} {args} ` on a path and return raw terminal output.
+    This function Runs `find {path} {args} ` in the terminal and return terminal output.
     """
     return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
@@ -175,10 +174,11 @@ def find (input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
       return temp
 
+@mcp.tool()
 def cat (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `cat {file path} {args} ` on a file path and return raw terminal output from that file.
+    This function Runs `cat {file path} {args} ` in the terminal and return terminal output.
     """
     return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
@@ -215,10 +215,11 @@ def cat (input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
       return temp
 
+@mcp.tool()
 def head (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `head {file path} {args}` on a file path and return raw terminal output from that file.
+    This function Runs `head {file path} {args}` in the terminal and return terminal output.
     """
     return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
@@ -254,10 +255,11 @@ def head (input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
       return temp
 
+@mcp.tool()
 def tail (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `tail {file path} {args}` on a file path and return raw terminal output from that file.
+    This function Runs `tail {file path} {args}` in the terminal and return terminal output.
     """
     return_dict = 0
     path = _normalize_and_guard(input.get("path", "."))
@@ -293,10 +295,11 @@ def tail (input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
       return temp
 
+@mcp.tool()
 def ps (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `ps {args}` on a file path and return raw terminal output from that file.
+    This function Runs `ps {args}` in the terminal and return terminal output.
     """
     return_dict = 0
     args = input.get("args")
@@ -326,10 +329,11 @@ def ps (input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" OUTPUT 	: \n" + res["output"]  + "\n"
       return temp
 
+@mcp.tool()
 def which (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `which {args}` on a file path and return raw terminal output from that file.
+    This function Runs `which {args}` in the terminal and return terminal output.
     """
     return_dict = 0
     args = input.get("args")
@@ -359,10 +363,11 @@ def which (input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" OUTPUT 	: \n" + res["output"]  + "\n"
       return temp
 
+@mcp.tool()
 def env (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `env {args}` on a file path and return raw terminal output from that file.
+    This function Runs `env {args}` in the terminal and return terminal output.
     """
     return_dict = 0
     args = input.get("args")
@@ -392,10 +397,11 @@ def env (input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" OUTPUT 	: \n" + res["output"]  + "\n"
       return temp
 
+@mcp.tool()
 def diff (input: Dict[str, Any]) -> Dict[str, Any]:
 
     """
-    Run `diff {args} {path1} {path2} ` on a file path and return raw terminal output from that file.
+    This function Runs `diff {args} {path1} {path2} ` in the terminal and return terminal output.
     """
     return_dict = 0
     args = input.get("args")
@@ -420,8 +426,9 @@ def diff (input: Dict[str, Any]) -> Dict[str, Any]:
         shell=True,
     )
     
-    if result.returncode != 0:
-       print("ERROR")
+    #@TODO :  need to fix this since it raisie an error even with the correct results 
+    #if result.returncode != 0:
+    #   raise ToolError(f"ERROR from returned command resulrs")
 
     output = result.stdout.rstrip("\n")
     res = {
@@ -438,22 +445,6 @@ def diff (input: Dict[str, Any]) -> Dict[str, Any]:
       temp = temp + f" COMMAND 	: "   + res["command"] + "\n"
       temp = temp + f" OUTPUT 	: \n" + res["output"]  + "\n"
       return temp
-
-
-# cat
-# less :  not usable in this context
-# more  :  not usable in this context
-# tail
-# tree
-# ps 
-
-# which
-# env
-
-# diff
-# cmp
-
-# printenv
 
 
 if __name__ == "__main__":
