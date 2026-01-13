@@ -19,7 +19,7 @@ def main():
 		logfile = "simulation/sim.log"
 		sourcecode = "simulation/design.sv"
 		vcd_path="simulation/sim.vcd"
-		"""
+		
 		print(f"\n##################################################################################################")
 		print(f"#  ")
 		print(f"#  TESTING : unix terminal functions")
@@ -70,7 +70,7 @@ def main():
 		print(f"### TEST9 : env ")
 		result = mcp_server.env({"args":""})
 		print(result)
-		"""
+		
 		print(f"##################################################################################################")
 		print(f"### TEST10 : diff ")
 		result = mcp_server.diff({"path1":"mcp_server.py","path2":"mcp_server_str_wrapper_test.py","args":""})
