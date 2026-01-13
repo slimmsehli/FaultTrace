@@ -491,6 +491,452 @@
           }
         }
       }
+      },
+    	{
+      "type": "function",
+      "function": {
+        "name": "vcd_get_simulation_time",
+        "description": "Return the simulation time in seconds for the given VCD file.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "store_scopes": { "type": "boolean", "description": "Cache/retain scopes during parsing", "default": false },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 8000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_get_simulation_time",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "store_scopes", "valueFrom": "store_scopes" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_get_timescale_scal",
+        "description": "Return the timescale scalar for the VCD file (numeric scale).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "store_scopes": { "type": "boolean", "description": "Cache/retain scopes during parsing", "default": false },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 8000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_get_timescale_scal",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "store_scopes", "valueFrom": "store_scopes" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_get_timescale_str",
+        "description": "Return the timescale magnitude and unit for the VCD file (e.g., '1 ns').",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "store_scopes": { "type": "boolean", "description": "Cache/retain scopes during parsing", "default": false },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 8000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_get_timescale_str",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "store_scopes", "valueFrom": "store_scopes" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "list_vcd_signals",
+        "description": "List signals in the VCD file, optionally filtered by a pattern substring.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "pattern": { "type": "string", "description": "Optional substring/regex to filter signal names", "default": "" },
+            "store_scopes": { "type": "boolean", "description": "Cache/retain scopes during parsing", "default": false },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 12000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "list_vcd_signals",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "pattern", "valueFrom": "pattern" },
+            { "name": "store_scopes", "valueFrom": "store_scopes" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n PATTERN\\t: {{pattern}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_get_signal_value_at_timestamp",
+        "description": "Return the value of a signal at a specific timestamp. Method controls lookup (e.g., 'previous').",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "signal_name": { "type": "string", "description": "Name of the signal" },
+            "timestamp": { "type": ["string", "number"], "description": "Timestamp (e.g., 1.25e-6 or '1250ns')" },
+            "method": { "type": "string", "description": "Lookup method", "default": "previous" },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 10000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path", "signal_name", "timestamp"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_get_signal_value_at_timestamp",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "signal_name", "valueFrom": "signal_name" },
+            { "name": "timestamp", "valueFrom": "timestamp" },
+            { "name": "method", "valueFrom": "method" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n SIGNAL\\t: {{signal_name}}\\n TIMESTAMP\\t: {{timestamp}}\\n METHOD\\t: {{method}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_get_signal_values_in_timeframe",
+        "description": "Return all values of a signal within a time window, optionally including the prior value at start.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "signal_name": { "type": "string", "description": "Name of the signal" },
+            "start": { "type": ["string", "number", "null"], "description": "Start timestamp (or null for beginning)" },
+            "end": { "type": ["string", "number", "null"], "description": "End timestamp (or null for end)" },
+            "include_start_prev": { "type": "boolean", "description": "Include the value immediately prior to start", "default": true },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 12000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path", "signal_name"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_get_signal_values_in_timeframe",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "signal_name", "valueFrom": "signal_name" },
+            { "name": "start", "valueFrom": "start" },
+            { "name": "end", "valueFrom": "end" },
+            { "name": "include_start_prev", "valueFrom": "include_start_prev" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n SIGNAL\\t: {{signal_name}}\\n START\\t: {{start}}\\n END\\t: {{end}}\\n INCLUDE_START_PREV\\t: {{include_start_prev}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_count_signal_all_transitions",
+        "description": "Count the number of transitions of a signal for a given edge (rising/falling) within a time window.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "signal_name": { "type": "string", "description": "Name of the signal" },
+            "edge": { "type": "string", "description": "Edge type", "enum": ["rising", "falling"], "default": "rising" },
+            "start": { "type": ["string", "number", "null"], "description": "Start timestamp (or null)" },
+            "end": { "type": ["string", "number", "null"], "description": "End timestamp (or null)" },
+            "bit_index": { "type": ["integer", "null"], "description": "Optional bit index for vectors", "minimum": 0 },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 12000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path", "signal_name", "edge"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_count_signal_all_transitions",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "signal_name", "valueFrom": "signal_name" },
+            { "name": "edge", "valueFrom": "edge" },
+            { "name": "start", "valueFrom": "start" },
+            { "name": "end", "valueFrom": "end" },
+            { "name": "bit_index", "valueFrom": "bit_index" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n SIGNAL\\t: {{signal_name}}\\n EDGE\\t: {{edge}}\\n START\\t: {{start}}\\n END\\t: {{end}}\\n BIT_INDEX\\t: {{bit_index}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_next_change_after",
+        "description": "Return the first change of a signal after the given timestamp.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "signal_name": { "type": "string", "description": "Name of the signal" },
+            "timestamp": { "type": ["string", "number"], "description": "Timestamp to search after" },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 10000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path", "signal_name", "timestamp"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_next_change_after",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "signal_name", "valueFrom": "signal_name" },
+            { "name": "timestamp", "valueFrom": "timestamp" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n SIGNAL\\t: {{signal_name}}\\n AFTER\\t: {{timestamp}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_prev_change_before",
+        "description": "Return the first change of a signal before the given timestamp.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "signal_name": { "type": "string", "description": "Name of the signal" },
+            "timestamp": { "type": ["string", "number"], "description": "Timestamp to search before" },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 10000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path", "signal_name", "timestamp"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_prev_change_before",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "signal_name", "valueFrom": "signal_name" },
+            { "name": "timestamp", "valueFrom": "timestamp" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n SIGNAL\\t: {{signal_name}}\\n BEFORE\\t: {{timestamp}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_search_value",
+        "description": "Search if a signal takes a given value within an optional time window.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "signal_name": { "type": "string", "description": "Name of the signal" },
+            "value": { "description": "Value to search for (string/number/binary/etc.)", "type": ["string", "number", "boolean", "object", "array", "null"] },
+            "start": { "type": ["string", "number", "null"], "description": "Start timestamp (or null)" },
+            "end": { "type": ["string", "number", "null"], "description": "End timestamp (or null)" },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 12000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path", "signal_name", "value"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_search_value",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "signal_name", "valueFrom": "signal_name" },
+            { "name": "value", "valueFrom": "value" },
+            { "name": "start", "valueFrom": "start" },
+            { "name": "end", "valueFrom": "end" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n SIGNAL\\t: {{signal_name}}\\n VALUE\\t: {{value}}\\n START\\t: {{start}}\\n END\\t: {{end}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_get_signals_values_at_timestamp",
+        "description": "Return the values of multiple signals at a specific timestamp. Method controls lookup (e.g., 'previous').",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "signal_names": { "type": "array", "items": { "type": "string" }, "description": "List of signal names" },
+            "timestamp": { "type": ["string", "number"], "description": "Timestamp to sample at" },
+            "method": { "type": "string", "description": "Lookup method", "default": "previous" },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 15000, "minimum": 100, "maximum": 60000 }
+          },
+          "required": ["path", "signal_names", "timestamp"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_get_signals_values_at_timestamp",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "signal_names", "valueFrom": "signal_names" },
+            { "name": "timestamp", "valueFrom": "timestamp" },
+            { "name": "method", "valueFrom": "method" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n SIGNALS\\t: {{signal_names}}\\n TIMESTAMP\\t: {{timestamp}}\\n METHOD\\t: {{method}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vcd_get_signals_aligned_in_window",
+        "description": "Return the values of multiple signals aligned across a time window.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "description": "Path to the VCD file" },
+            "signal_names": { "type": "array", "items": { "type": "string" }, "description": "List of signal names" },
+            "start": { "type": ["string", "number"], "description": "Start timestamp" },
+            "end": { "type": ["string", "number"], "description": "End timestamp" },
+            "timeout_ms": { "type": "integer", "description": "Timeout in milliseconds", "default": 20000, "minimum": 100, "maximum": 120000 }
+          },
+          "required": ["path", "signal_names", "start", "end"]
+        },
+        "x-exec": {
+          "runtime": "python",
+          "module": "vcd_tools",
+          "function": "vcd_get_signals_aligned_in_window",
+          "kwargsMap": [
+            { "name": "path", "valueFrom": "path" },
+            { "name": "signal_names", "valueFrom": "signal_names" },
+            { "name": "start", "valueFrom": "start" },
+            { "name": "end", "valueFrom": "end" }
+          ],
+          "timeoutMsFrom": "timeout_ms",
+          "pathGuards": {
+            "requireExists": ["path"],
+            "denyPrefixes": ["/etc", "/var", "/proc", "/dev", "/sys", "/root", "/"],
+            "requireWithinCwd": true
+          },
+          "resultFormat": {
+            "textTemplate": " FILE\\t: {{path}}\\n SIGNALS\\t: {{signal_names}}\\n START\\t: {{start}}\\n END\\t: {{end}}\\n COMMAND\\t: {{module}}.{{function}}\\n OUTPUT\\t: \\n{{stdout}}\\n"
+          }
+        }
+      }
     }
   ]
 }

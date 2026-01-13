@@ -1,4 +1,6 @@
-#
+
+########################################
+######## unix Terminal tools list
 
 def ls(input: Dict[str, Any]) -> Dict[str, Any]:
     This function Runs `ls -lrth {path}` in the terminal and return terminal output.
@@ -29,4 +31,64 @@ def env (input: Dict[str, Any]) -> Dict[str, Any]:
 
 def diff (input: Dict[str, Any]) -> Dict[str, Any]:
     This function Runs `diff {args} {path1} {path2} ` in the terminal and return terminal output.
+
+########################################
+######## vcd parsing tools list
+
+def vcd_get_simulation_time(path: str, store_scopes: bool = False) -> str:
+		This function take the path to the vcd file and return the simulation time in seconds 
+    
+def vcd_get_timescale_scal(path: str, store_scopes: bool = False) -> str:
+		This function takes the path to a vcd file and return the timescale 
+    
+def vcd_get_timescale_str(path: str, store_scopes: bool = False) -> str:
+		This function takes the path to a vcd file and return the magnitude and the unit of the timescale
+
+def list_vcd_signals(path: str, pattern: str = "", store_scopes: bool = False) -> str:
+		This function takes the path to a vcd file, a string pattern, and return the list of signals in the vcd that contains the given pattern   
+    
+def vcd_get_signal_value_at_timestamp(path: str, signal_name: str, timestamp: Union[str, float, int], method: str = "previous") -> str:
+		This function take a path to a vcd file, a name of a signal and a timestamp in the simulation and return the value of the given signal in the given timestamp from the vcd file 
+
+def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], include_start_prev: bool = True) -> str:
+    This function take a path to a vcd file, a name of a signal and a start and end timezindow in the simulation and return all the values of the given signal in the given timewindow from the vcd file 
+
+def vcd_count_signal_all_transitions(path: str, signal_name: str, edge: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], bit_index: Optional[int] = None) -> str:
+    This function takes the path of a vcd file, the name of a signal, an edge type rising or falling and a simulation timewindow start and end values, and return the number of transition of the given signal for the given edge type inside the given timewindow 
+
+def vcd_next_change_after(path: str, signal_name: str, timestamp: Union[str, float, int]) -> str:
+    This function takes the path to a vcd file, a signal name, a timestamp, and return the first transitions of a signal after the given timestamp in the simulation 
+
+def vcd_prev_change_before(path: str, signal_name: str, timestamp: Union[str, float, int]) -> str:
+		This function takes the path to a vcd file, a signal name, a timestamp, and return the first transitions of a signal before the given timestamp in the simulation
+
+
+def vcd_search_value(path: str, signal_name: str, value: Any, start: Optional[Union[str, float, int]] = None, end: Optional[Union[str, float, int]] = None) -> str:
+		This function takes the path to a vcd file, a signal name, a signal value and a simulation timewindow start and end time, and return if the given signal value is assigned to the signal name given during the given timewindow 
+
+def vcd_get_signals_values_at_timestamp(path: str, signal_names: Iterable[str], timestamp: Union[str, float, int], method: str = "previous") -> str:
+		This function takes a vcd file path, a list of signal names, a timestamp, and return the values of all the given signals in that timestamp during the simulation
+
+def vcd_get_signals_aligned_in_window(path: str, signal_names: Iterable[str], start: Union[str, float, int], end: Union[str, float, int]) -> str:
+		This function takes a vcd file path, a list of signal names, a simulation timewindow start and end time, and return the values of all the given signals in that timewidnow during the simulation aligned
+
+########################################
+######## log and source file parsing
+
+def parse_log_for_errors(log_path: str, error_regx : str = r"ERROR:\s+([\d\w\.\/]+)\s+at\s+line\s+(\d+)") -> str:
+		This function take a log file path and an error regular expression, and search inside the given file for the given regular expression 
+
+def find_first_uvm_error(log_path: str) -> str:
+		This function takes a path to a log file and return the first UVM_ERROR or UVM_FATAL encountered in that log file
+
+def get_error_context(log_path: str, error_line: int, window: int = 20) -> str:
+		This function takes the path to a file a line number and a window of N lines, and return the N lines preceding the given line 
+
+def search_log_keyword(log_path: str, keyword: str, context_lines: int = 10) -> str:
+		This function takes the path to a file, a keyword, and context lines (N), and return the surrounding text of that keyword in the file with plus and ,minux the given context lines 
+
+def get_source_snippet(file_path: str, line_number: int, context: int = 5) -> str:
+    This function take a path to a file, a line number and a context window of N lines, and return the code around the given lines with the N given context window
+
+
 
