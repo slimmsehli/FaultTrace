@@ -3,13 +3,13 @@
   {
     "name": "terminal_tools",
     "command": "python",
-    "args": ["mcp_server_terminal.py"],
+    "args": ["../server/mcp_server_terminal.py"],
     "prefix": "terminal"
   },
   {
     "name": "debug_tools",
     "command": "node",
-    "args": ["mcp_server_str_wrapper.py"],
+    "args": ["../server/mcp_server_str_wrapper.py"],
     "prefix": "debug"
   }
 ]

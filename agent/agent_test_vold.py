@@ -35,7 +35,7 @@ cfg = json.loads(Path("../server/mcp_servers.json").read_text(encoding="utf-8"))
 
 async def run_agent_loop():
     # note : call the MCP server that contains all the tools
-    server_params = StdioServerParameters(command="python", args=["mcp_server_str_wrapper.py"])
+    server_params = StdioServerParameters(command="python", args=["../server/mcp_server_str_wrapper.py"])
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
