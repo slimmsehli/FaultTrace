@@ -25,7 +25,7 @@ client = OpenAI()
 
 ### this part was added to load the system prompt from external file
 from pathlib import Path
-system_prompt = Path("../agent/system_prompt").read_text()
+system_prompt = Path("system_prompt").read_text()
 tools_list = json.loads(Path("../server/tools_register.json").read_text(encoding="utf-8"))
 #load mcp server config
 cfg = json.loads(Path("../server/mcp_servers.json").read_text(encoding="utf-8"))
@@ -39,9 +39,26 @@ async def run_agent_loop():
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
+            # initialize the session
             await session.initialize()
 
-            ### System prompt for the Agent
+            # fetch the tools on the mcp server
+            mcp_tools_fetched = await session.list_tools()
+            # convert the MCP tools to openai tool format
+            openai_tools = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name" : tool.name,
+                        "description" : tool.description,
+                        "parameters" : tool.inputSchema,
+                    }
+                }
+                for tool in mcp_tools_fetched.tools
+            ]
+            print(f"Successfully loaded {len(openai_tools)} tools from MCP server.")
+
+            # System prompt for the Agent with the MCP tools
             messages = [
                 {
                     "role": "system",
@@ -49,12 +66,9 @@ async def run_agent_loop():
                 },
                 {
                     "role": "user",
-                    "content": "Investigate the failure in 'sim.log' and explain the code error."
+                    "content": "Investigate the failure in './simulation/sim.log' and explain the code error."
                 }
             ]
-
-            ### Tools list defined on the mcp server
-            tools = tools_list
 
             ### Agent loop
 
@@ -68,7 +82,7 @@ async def run_agent_loop():
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=messages,
-                    tools=tools,
+                    tools=openai_tools,
                     tool_choice="auto"
                 )
                 ## note : add the LLM response to the message history

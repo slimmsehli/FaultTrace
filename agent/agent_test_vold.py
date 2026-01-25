@@ -49,7 +49,7 @@ async def run_agent_loop():
                 },
                 {
                     "role": "user",
-                    "content": "Investigate the failure in 'sim.log' and explain the code error."
+                    "content": "Investigate the failure in './simulation/sim.log' and explain the code error."
                 }
             ]
 
