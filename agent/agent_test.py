@@ -30,6 +30,34 @@ tools_list = json.loads(Path("../server/tools_register.json").read_text(encoding
 #load mcp server config
 cfg = json.loads(Path("../server/mcp_servers.json").read_text(encoding="utf-8"))
 
+def load_tools(fetched_tools_list):
+    # convert the MCP tools to openai tool format
+    openai_tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": tool.inputSchema,
+            }
+        }
+        for tool in fetched_tools_list.tools
+    ]
+    print(f"Successfully loaded {len(openai_tools)} tools from MCP server.")
+    with open("loaded_tools.log", "w", encoding="utf-8") as f:
+        f.write(f"Total tools found: {len(fetched_tools_list.tools)}\n")
+        f.write("-" * 30 + "\n")
+        for tool in fetched_tools_list.tools:
+            f.write(f"Tool Name: {tool.name}\n")
+            f.write(f"Description: {tool.description}\n")
+            f.write(f"Parameters Schema: {json.dumps(tool.inputSchema, indent=2)}\n")
+            f.write("-" * 30 + "\n")
+
+    print("Successfully saved tool list to 'loaded_tools'.")
+
+    return openai_tools
+
+
 # note : log file and vcd file are always in the "./simulation" directory for now
 # also the compilation script , the log file, the vcd file are given to the agent manually in fixed format
 
@@ -44,6 +72,9 @@ async def run_agent_loop():
 
             # fetch the tools on the mcp server
             mcp_tools_fetched = await session.list_tools()
+            # load_tools :  convert the fetched tools into open ai format and dump a copy locally
+            openai_tools = load_tools(mcp_tools_fetched)
+            """
             # convert the MCP tools to openai tool format
             openai_tools = [
                 {
@@ -57,7 +88,7 @@ async def run_agent_loop():
                 for tool in mcp_tools_fetched.tools
             ]
             print(f"Successfully loaded {len(openai_tools)} tools from MCP server.")
-
+            """
             # System prompt for the Agent with the MCP tools
             messages = [
                 {

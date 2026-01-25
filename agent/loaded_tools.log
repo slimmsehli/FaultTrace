@@ -1,0 +1,759 @@
+Total tools found: 19
+------------------------------
+Tool Name: parse_log_for_errors
+Description: Finds the VCD file and any Verilog errors in the log.
+Parameters Schema: {
+  "properties": {
+    "log_path": {
+      "title": "Log Path",
+      "type": "string"
+    },
+    "error_regx": {
+      "default": "ERROR:\\s+([\\d\\w\\.\\/]+)\\s+at\\s+line\\s+(\\d+)",
+      "title": "Error Regx",
+      "type": "string"
+    }
+  },
+  "required": [
+    "log_path"
+  ],
+  "title": "parse_log_for_errorsArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: find_first_uvm_error
+Description: Finds the line number of the first UVM_ERROR or UVM_FATAL.
+Parameters Schema: {
+  "properties": {
+    "log_path": {
+      "title": "Log Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "log_path"
+  ],
+  "title": "find_first_uvm_errorArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: get_error_context
+Description: Extracts the 'N' lines preceding an error for LLM analysis.
+Parameters Schema: {
+  "properties": {
+    "log_path": {
+      "title": "Log Path",
+      "type": "string"
+    },
+    "error_line": {
+      "title": "Error Line",
+      "type": "integer"
+    },
+    "window": {
+      "default": 20,
+      "title": "Window",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "log_path",
+    "error_line"
+  ],
+  "title": "get_error_contextArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: search_log_keyword
+Description: 
+Searches for a keyword in the log and returns the matching line
+plus surrounding context. Useful for finding UVM_ERRORs and file paths.
+
+Parameters Schema: {
+  "properties": {
+    "log_path": {
+      "title": "Log Path",
+      "type": "string"
+    },
+    "keyword": {
+      "title": "Keyword",
+      "type": "string"
+    },
+    "context_lines": {
+      "default": 10,
+      "title": "Context Lines",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "log_path",
+    "keyword"
+  ],
+  "title": "search_log_keywordArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: get_source_snippet
+Description: 
+Opens a source code file and extracts the code around a specific line.
+
+Parameters Schema: {
+  "properties": {
+    "file_path": {
+      "title": "File Path",
+      "type": "string"
+    },
+    "line_number": {
+      "title": "Line Number",
+      "type": "integer"
+    },
+    "context": {
+      "default": 5,
+      "title": "Context",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "file_path",
+    "line_number"
+  ],
+  "title": "get_source_snippetArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_simulation_time
+Description: 
+Return total simulation time in seconds (float).
+Accepts a VCD file path.
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "store_scopes": {
+      "default": false,
+      "title": "Store Scopes",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "title": "vcd_get_simulation_timeArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_timescale_scal
+Description: Get the magnitude and the unit of the timescale of a vcd file and output as two string format 
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "store_scopes": {
+      "default": false,
+      "title": "Store Scopes",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "title": "vcd_get_timescale_scalArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_timescale_str
+Description: Get the magnitude and the unit of the timescale of a vcd file and output as two string format 
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "store_scopes": {
+      "default": false,
+      "title": "Store Scopes",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "title": "vcd_get_timescale_strArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: list_vcd_signals
+Description: Returns a list of all signals in the VCD matching a pattern (e.g., 'dut').
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "pattern": {
+      "default": "",
+      "title": "Pattern",
+      "type": "string"
+    },
+    "store_scopes": {
+      "default": false,
+      "title": "Store Scopes",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "title": "list_vcd_signalsArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_signal_value_at_timestamp
+Description: 
+Return the value of a signal at a specific timestamp.
+the input is the signal name and the timestamp
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_name": {
+      "title": "Signal Name",
+      "type": "string"
+    },
+    "timestamp": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "Timestamp"
+    },
+    "method": {
+      "default": "previous",
+      "title": "Method",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path",
+    "signal_name",
+    "timestamp"
+  ],
+  "title": "vcd_get_signal_value_at_timestampArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_signal_value_at_timestamp_scal
+Description: 
+Return the value of a signal at a specific timestamp.
+the input is the signal name and the timestamp
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_name": {
+      "title": "Signal Name",
+      "type": "string"
+    },
+    "timestamp": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "Timestamp"
+    },
+    "method": {
+      "default": "previous",
+      "title": "Method",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path",
+    "signal_name",
+    "timestamp"
+  ],
+  "title": "vcd_get_signal_value_at_timestamp_scalArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_signal_values_in_timeframe
+Description: 
+Return the values of a signal at a specific time window.
+the input is the signal name and the time window high and low limit
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_name": {
+      "title": "Signal Name",
+      "type": "string"
+    },
+    "start": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Start"
+    },
+    "end": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "End"
+    },
+    "include_start_prev": {
+      "default": true,
+      "title": "Include Start Prev",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path",
+    "signal_name",
+    "start",
+    "end"
+  ],
+  "title": "vcd_get_signal_values_in_timeframeArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_signal_values_in_timeframe_scal
+Description: 
+Return the values of a signal at a specific time window.
+the input is the signal name and the time window high and low limit
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_name": {
+      "title": "Signal Name",
+      "type": "string"
+    },
+    "start": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Start"
+    },
+    "end": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "End"
+    },
+    "include_start_prev": {
+      "default": true,
+      "title": "Include Start Prev",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "path",
+    "signal_name",
+    "start",
+    "end"
+  ],
+  "title": "vcd_get_signal_values_in_timeframe_scalArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_count_signal_all_transitions
+Description: 
+Return the count of the number of a signal edges in a time window
+the input is the signal name, the edge, the start and finsh time limit of the time window and a bit index if it is a bus
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_name": {
+      "title": "Signal Name",
+      "type": "string"
+    },
+    "edge": {
+      "title": "Edge",
+      "type": "string"
+    },
+    "start": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Start"
+    },
+    "end": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "End"
+    },
+    "bit_index": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bit Index"
+    }
+  },
+  "required": [
+    "path",
+    "signal_name",
+    "edge",
+    "start",
+    "end"
+  ],
+  "title": "vcd_count_signal_all_transitionsArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_next_change_after
+Description: 
+Return the first change of a signal after a timestamp.
+the input is the signal name and the timestamp
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_name": {
+      "title": "Signal Name",
+      "type": "string"
+    },
+    "timestamp": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "Timestamp"
+    }
+  },
+  "required": [
+    "path",
+    "signal_name",
+    "timestamp"
+  ],
+  "title": "vcd_next_change_afterArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_prev_change_before
+Description: 
+Return the first change of a signal before a timestamp.
+the input is the signal name and the timestamp
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_name": {
+      "title": "Signal Name",
+      "type": "string"
+    },
+    "timestamp": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "Timestamp"
+    }
+  },
+  "required": [
+    "path",
+    "signal_name",
+    "timestamp"
+  ],
+  "title": "vcd_prev_change_beforeArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_search_value
+Description: 
+Return if a signal has encountered a specific value during the simulation
+the input is the signal name and the value to be searched
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_name": {
+      "title": "Signal Name",
+      "type": "string"
+    },
+    "value": {
+      "title": "Value"
+    },
+    "start": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Start"
+    },
+    "end": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "End"
+    }
+  },
+  "required": [
+    "path",
+    "signal_name",
+    "value"
+  ],
+  "title": "vcd_search_valueArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_signals_values_at_timestamp
+Description: 
+Return a dict {signal_name: value_at_timestamp} for multiple signals.
+- method='previous': last value at or before timestamp (step/hold semantics)
+- method='exact': only return a value if there is an event exactly at timestamp; else None
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_names": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Signal Names",
+      "type": "array"
+    },
+    "timestamp": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "Timestamp"
+    },
+    "method": {
+      "default": "previous",
+      "title": "Method",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path",
+    "signal_names",
+    "timestamp"
+  ],
+  "title": "vcd_get_signals_values_at_timestampArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: vcd_get_signals_aligned_in_window
+Description: 
+Returns (times, values_by_signal):
+- times: sorted list including 'start' and all change times of the requested signals
+         that fall within (start, end].
+- values_by_signal: {signal_name: [v0, v1, ...]} aligned to 'times'
+  using step/hold semantics (previous value up to next change).
+
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "signal_names": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Signal Names",
+      "type": "array"
+    },
+    "start": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "Start"
+    },
+    "end": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "title": "End"
+    }
+  },
+  "required": [
+    "path",
+    "signal_names",
+    "start",
+    "end"
+  ],
+  "title": "vcd_get_signals_aligned_in_windowArguments",
+  "type": "object"
+}
+------------------------------
