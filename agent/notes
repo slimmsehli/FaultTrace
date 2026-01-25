@@ -4,3 +4,6 @@ in the system prompt need to sepcify that before looking into any signal name in
 the agent should extract all the signal names presented in the design and tehn will search for a signal by name
 #@TODO : the agent is free to check the DUT files
 if the analysis is pointing to a bad response from the DUT the agent should check the DUT files for issues
+
+#@TODO : multiple mcp server loading
+ need a function to load all the mcp servers and to map the tools correctly to be use, I did not add the linux terminal server yet

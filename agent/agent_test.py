@@ -63,32 +63,53 @@ def load_tools(fetched_tools_list):
 
 async def run_agent_loop():
     # note : call the MCP server that contains all the tools
-    server_params = StdioServerParameters(command="python", args=["../server/mcp_server_str_wrapper.py"])
+    server_params1 = StdioServerParameters(command="python", args=["../server/mcp_server_str_wrapper.py"])
+    server_params2 = StdioServerParameters(command="python", args=["../server/mcp_server_terminal.py"])
 
-    async with stdio_client(server_params) as (read, write):
-        async with ClientSession(read, write) as session:
+    async with stdio_client(server_params1) as (read1, write1), \
+            stdio_client(server_params2) as (read2, write2):
+        async with ClientSession(read1, write1) as session1, \
+                ClientSession(read2, write2) as session2:
             # initialize the session
-            await session.initialize()
+            await session1.initialize()
+            await session2.initialize()
 
-            # fetch the tools on the mcp server
-            mcp_tools_fetched = await session.list_tools()
-            # load_tools :  convert the fetched tools into open ai format and dump a copy locally
-            openai_tools = load_tools(mcp_tools_fetched)
-            """
-            # convert the MCP tools to openai tool format
+            mcp_tools = []
+            tool_to_session = {}
+
+            # Get tools from Server 1
+            res1 = await session1.list_tools()
+            for t in res1.tools:
+                mcp_tools.append(t)
+                tool_to_session[t.name] = session1
+
+            # Get tools from Server 2
+            res2 = await session2.list_tools()
+            for t in res2.tools:
+                mcp_tools.append(t)
+                tool_to_session[t.name] = session2
+
+            # 4. Format for OpenAI and save to file
             openai_tools = [
-                {
-                    "type": "function",
-                    "function": {
-                        "name" : tool.name,
-                        "description" : tool.description,
-                        "parameters" : tool.inputSchema,
-                    }
-                }
-                for tool in mcp_tools_fetched.tools
+                {"type": "function",
+                 "function": {"name": t.name, "description": t.description, "parameters": t.inputSchema}}
+                for t in mcp_tools
             ]
+            #print(f"Successfully loaded {len(openai_tools)} tools from MCP server.")
+            #with open("loaded_tools", "w", encoding="utf-8") as f:
+            #    f.write(json.dumps(openai_tools, indent=2))
             print(f"Successfully loaded {len(openai_tools)} tools from MCP server.")
-            """
+            with open("loaded_tools.log", "w", encoding="utf-8") as f:
+                f.write(f"Total tools found: {len(mcp_tools)}\n")
+                f.write("-" * 30 + "\n")
+                for tool in mcp_tools:
+                    f.write(f"Tool Name: {tool.name}\n")
+                    f.write(f"Description: {tool.description}\n")
+                    f.write(f"Parameters Schema: {json.dumps(tool.inputSchema, indent=2)}\n")
+                    f.write("-" * 30 + "\n")
+
+            print("Successfully saved tool list to 'loaded_tools'.")
+
             # System prompt for the Agent with the MCP tools
             messages = [
                 {
@@ -140,7 +161,10 @@ async def run_agent_loop():
                     print(f"\n[Iteration {i + 1}] [TOOL] : Tool Calling : {fname}, fargs: {fargs}")
 
                     # debug : execute the tool from the MCP server
-                    result = await session.call_tool(fname, fargs)
+                    #result = await session.call_tool(fname, fargs) ### removed
+                    # ROUTING: Use the dictionary to pick the right session
+                    target_session = tool_to_session[fname]
+                    result = await target_session.call_tool(fname, fargs)
                     #print(f"\n[Iteration {i + 1}] [TOOL] : Tool response : \n////\n {result.} \n////\n")
 
                     # note : add the tool response to the message history

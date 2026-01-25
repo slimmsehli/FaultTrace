@@ -1,4 +1,4 @@
-Total tools found: 19
+Total tools found: 29
 ------------------------------
 Tool Name: parse_log_for_errors
 Description: Finds the VCD file and any Verilog errors in the log.
@@ -754,6 +754,196 @@ Parameters Schema: {
     "end"
   ],
   "title": "vcd_get_signals_aligned_in_windowArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: ls
+Description: 
+This function Runs `ls -lrth {path}` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "lsArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: grep
+Description: 
+This function Runs `grep {opts} {regr} {path}` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "grepArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: find
+Description: 
+This function Runs `find {path} {args} ` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "findArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: cat
+Description: 
+This function Runs `cat {file path} {args} ` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "catArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: head
+Description: 
+This function Runs `head {file path} {args}` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "headArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: tail
+Description: 
+This function Runs `tail {file path} {args}` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "tailArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: ps
+Description: 
+This function Runs `ps {args}` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "psArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: which
+Description: 
+This function Runs `which {args}` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "whichArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: env
+Description: 
+This function Runs `env {args}` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "envArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: diff
+Description: 
+This function Runs `diff {args} {path1} {path2} ` in the terminal and return terminal output.
+
+Parameters Schema: {
+  "properties": {
+    "input": {
+      "additionalProperties": true,
+      "title": "Input",
+      "type": "object"
+    }
+  },
+  "required": [
+    "input"
+  ],
+  "title": "diffArguments",
   "type": "object"
 }
 ------------------------------
