@@ -65,9 +65,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: search_log_keyword
 Description: 
-Searches for a keyword in the log and returns the matching line
-plus surrounding context. Useful for finding UVM_ERRORs and file paths.
-
+    Searches for a keyword in the log and returns the matching line
+    plus surrounding context. Useful for finding UVM_ERRORs and file paths.
+    
 Parameters Schema: {
   "properties": {
     "log_path": {
@@ -94,8 +94,8 @@ Parameters Schema: {
 ------------------------------
 Tool Name: get_source_snippet
 Description: 
-Opens a source code file and extracts the code around a specific line.
-
+    Opens a source code file and extracts the code around a specific line.
+    
 Parameters Schema: {
   "properties": {
     "file_path": {
@@ -122,9 +122,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_get_simulation_time
 Description: 
-Return total simulation time in seconds (float).
-Accepts a VCD file path.
-
+    Return total simulation time in seconds (float).
+    Accepts a VCD file path.
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -145,7 +145,7 @@ Parameters Schema: {
 }
 ------------------------------
 Tool Name: vcd_get_timescale_scal
-Description: Get the magnitude and the unit of the timescale of a vcd file and output as two string format 
+Description:  Get the magnitude and the unit of the timescale of a vcd file and output as two string format 
 Parameters Schema: {
   "properties": {
     "path": {
@@ -166,7 +166,7 @@ Parameters Schema: {
 }
 ------------------------------
 Tool Name: vcd_get_timescale_str
-Description: Get the magnitude and the unit of the timescale of a vcd file and output as two string format 
+Description:  Get the magnitude and the unit of the timescale of a vcd file and output as two string format 
 Parameters Schema: {
   "properties": {
     "path": {
@@ -214,9 +214,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_get_signal_value_at_timestamp
 Description: 
-Return the value of a signal at a specific timestamp.
-the input is the signal name and the timestamp
-
+    Return the value of a signal at a specific timestamp.
+    the input is the signal name and the timestamp
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -258,9 +258,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_get_signal_value_at_timestamp_scal
 Description: 
-Return the value of a signal at a specific timestamp.
-the input is the signal name and the timestamp
-
+        Return the value of a signal at a specific timestamp.
+        the input is the signal name and the timestamp
+        
 Parameters Schema: {
   "properties": {
     "path": {
@@ -302,9 +302,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_get_signal_values_in_timeframe
 Description: 
-Return the values of a signal at a specific time window.
-the input is the signal name and the time window high and low limit
-
+    Return the values of a signal at a specific time window.
+    the input is the signal name and the time window high and low limit
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -367,9 +367,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_get_signal_values_in_timeframe_scal
 Description: 
-Return the values of a signal at a specific time window.
-the input is the signal name and the time window high and low limit
-
+    Return the values of a signal at a specific time window.
+    the input is the signal name and the time window high and low limit
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -432,9 +432,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_count_signal_all_transitions
 Description: 
-Return the count of the number of a signal edges in a time window
-the input is the signal name, the edge, the start and finsh time limit of the time window and a bit index if it is a bus
-
+    Return the count of the number of a signal edges in a time window
+    the input is the signal name, the edge, the start and finsh time limit of the time window and a bit index if it is a bus
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -509,9 +509,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_next_change_after
 Description: 
-Return the first change of a signal after a timestamp.
-the input is the signal name and the timestamp
-
+    Return the first change of a signal after a timestamp.
+    the input is the signal name and the timestamp
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -548,9 +548,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_prev_change_before
 Description: 
-Return the first change of a signal before a timestamp.
-the input is the signal name and the timestamp
-
+    Return the first change of a signal before a timestamp.
+    the input is the signal name and the timestamp
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -587,9 +587,9 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_search_value
 Description: 
-Return if a signal has encountered a specific value during the simulation
-the input is the signal name and the value to be searched
-
+    Return if a signal has encountered a specific value during the simulation
+    the input is the signal name and the value to be searched
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -651,10 +651,10 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_get_signals_values_at_timestamp
 Description: 
-Return a dict {signal_name: value_at_timestamp} for multiple signals.
-- method='previous': last value at or before timestamp (step/hold semantics)
-- method='exact': only return a value if there is an event exactly at timestamp; else None
-
+    Return a dict {signal_name: value_at_timestamp} for multiple signals.
+    - method='previous': last value at or before timestamp (step/hold semantics)
+    - method='exact': only return a value if there is an event exactly at timestamp; else None
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -699,12 +699,12 @@ Parameters Schema: {
 ------------------------------
 Tool Name: vcd_get_signals_aligned_in_window
 Description: 
-Returns (times, values_by_signal):
-- times: sorted list including 'start' and all change times of the requested signals
-         that fall within (start, end].
-- values_by_signal: {signal_name: [v0, v1, ...]} aligned to 'times'
-  using step/hold semantics (previous value up to next change).
-
+    Returns (times, values_by_signal):
+    - times: sorted list including 'start' and all change times of the requested signals
+             that fall within (start, end].
+    - values_by_signal: {signal_name: [v0, v1, ...]} aligned to 'times'
+      using step/hold semantics (previous value up to next change).
+    
 Parameters Schema: {
   "properties": {
     "path": {
@@ -759,37 +759,55 @@ Parameters Schema: {
 ------------------------------
 Tool Name: ls
 Description: 
-This function Runs `ls -lrth {path}` in the terminal and return terminal output.
-
+    This function Runs `ls {args} {path}` in the terminal and returns terminal output.
+    
+    :param path: The directory path to list files for. Defaults to current directory.
+    :param args: Additional ls command arguments (e.g., "-l or -lrt").
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "path": {
+      "default": ".",
+      "title": "Path",
+      "type": "string"
+    },
+    "args": {
+      "default": "",
+      "title": "Args",
+      "type": "string"
     }
   },
-  "required": [
-    "input"
-  ],
   "title": "lsArguments",
   "type": "object"
 }
 ------------------------------
 Tool Name: grep
 Description: 
-This function Runs `grep {opts} {regr} {path}` in the terminal and return terminal output.
+    Runs `grep {opts} {regr} {path}` in the terminal and returns the output.
 
+    :param regr: The regular expression or pattern to search for.
+    :param path: The file or directory path to search within.
+    :param opts: Grep options (e.g., '-i' for case-insensitive, '-l' for filenames only). Defaults to '-ri'.
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "regr": {
+      "title": "Regr",
+      "type": "string"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "opts": {
+      "default": "-ri",
+      "title": "Opts",
+      "type": "string"
     }
   },
   "required": [
-    "input"
+    "regr",
+    "path"
   ],
   "title": "grepArguments",
   "type": "object"
@@ -797,37 +815,49 @@ Parameters Schema: {
 ------------------------------
 Tool Name: find
 Description: 
-This function Runs `find {path} {args} ` in the terminal and return terminal output.
+    Runs `find {path} {args}` in the terminal and returns output.
 
+    :param path: The directory path to start the search.
+    :param args: Additional find command arguments (e.g., '-name *.py').
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "path": {
+      "default": ".",
+      "title": "Path",
+      "type": "string"
+    },
+    "args": {
+      "default": "",
+      "title": "Args",
+      "type": "string"
     }
   },
-  "required": [
-    "input"
-  ],
   "title": "findArguments",
   "type": "object"
 }
 ------------------------------
 Tool Name: cat
 Description: 
-This function Runs `cat {file path} {args} ` in the terminal and return terminal output.
-
+    This function Runs `cat {args} {path}` in the terminal and returns terminal output.
+    
+    :param path: The path to the file you want to read.
+    :param args: Additional cat flags (e.g., '-n' for line numbers).
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "args": {
+      "default": "",
+      "title": "Args",
+      "type": "string"
     }
   },
   "required": [
-    "input"
+    "path"
   ],
   "title": "catArguments",
   "type": "object"
@@ -835,18 +865,25 @@ Parameters Schema: {
 ------------------------------
 Tool Name: head
 Description: 
-This function Runs `head {file path} {args}` in the terminal and return terminal output.
-
+    This function Runs `head {args} {path}` in the terminal and returns the first part of a file.
+    
+    :param path: The path to the file you want to inspect.
+    :param args: Flags for head (e.g., '-n 50' for 50 lines). Defaults to '-n 20'.
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "args": {
+      "default": "-n 20",
+      "title": "Args",
+      "type": "string"
     }
   },
   "required": [
-    "input"
+    "path"
   ],
   "title": "headArguments",
   "type": "object"
@@ -854,18 +891,25 @@ Parameters Schema: {
 ------------------------------
 Tool Name: tail
 Description: 
-This function Runs `tail {file path} {args}` in the terminal and return terminal output.
-
+    This function Runs `tail {args} {path}` in the terminal and returns the last part of a file.
+    
+    :param path: The path to the file you want to inspect.
+    :param args: Flags for tail (e.g., '-n 50' for the last 50 lines). Defaults to '-n 20'.
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "args": {
+      "default": "-n 20",
+      "title": "Args",
+      "type": "string"
     }
   },
   "required": [
-    "input"
+    "path"
   ],
   "title": "tailArguments",
   "type": "object"
@@ -873,37 +917,37 @@ Parameters Schema: {
 ------------------------------
 Tool Name: ps
 Description: 
-This function Runs `ps {args}` in the terminal and return terminal output.
-
+    This function runs `ps {args}` in the terminal and returns the process status output.
+    
+    :param args: Flags for the ps command (e.g., 'ux', '-ef', or '-aux'). Defaults to 'ux'.
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "args": {
+      "default": "ux",
+      "title": "Args",
+      "type": "string"
     }
   },
-  "required": [
-    "input"
-  ],
   "title": "psArguments",
   "type": "object"
 }
 ------------------------------
 Tool Name: which
 Description: 
-This function Runs `which {args}` in the terminal and return terminal output.
-
+    Runs `which {args}` to find the executable path of a command.
+    
+    :param command_name: The name of the executable to locate (e.g., 'python3', 'ls', 'vcs').
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "args": {
+      "title": "Args",
+      "type": "string"
     }
   },
   "required": [
-    "input"
+    "args"
   ],
   "title": "whichArguments",
   "type": "object"
@@ -911,37 +955,49 @@ Parameters Schema: {
 ------------------------------
 Tool Name: env
 Description: 
-This function Runs `env {args}` in the terminal and return terminal output.
-
+    This function runs `env {args}` in the terminal and returns the environment variables.
+    
+    :param args: Optional flags for the env command, or use 'grep' with it to filter.
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "args": {
+      "default": "",
+      "title": "Args",
+      "type": "string"
     }
   },
-  "required": [
-    "input"
-  ],
   "title": "envArguments",
   "type": "object"
 }
 ------------------------------
 Tool Name: diff
 Description: 
-This function Runs `diff {args} {path1} {path2} ` in the terminal and return terminal output.
-
+    Runs `diff {args} {path1} {path2}` in the terminal and returns the differences.
+    
+    :param path1: The first file or directory path to compare.
+    :param path2: The second file or directory path to compare.
+    :param args: Flags for diff (e.g., '-u' for unified format, '-y' for side-by-side). Defaults to '-u'.
+    
 Parameters Schema: {
   "properties": {
-    "input": {
-      "additionalProperties": true,
-      "title": "Input",
-      "type": "object"
+    "path1": {
+      "title": "Path1",
+      "type": "string"
+    },
+    "path2": {
+      "title": "Path2",
+      "type": "string"
+    },
+    "args": {
+      "default": "-u",
+      "title": "Args",
+      "type": "string"
     }
   },
   "required": [
-    "input"
+    "path1",
+    "path2"
   ],
   "title": "diffArguments",
   "type": "object"

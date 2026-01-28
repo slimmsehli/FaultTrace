@@ -131,7 +131,7 @@ async def run_agent_loop():
                 print(f"\n[Iteration {i + 1}] [AGENT] : Thinking...")
                 # note : get a response from the LLM
                 response = client.chat.completions.create(
-                    model="gpt-4o",
+                    model="gpt-5-mini", #gpt-4o",
                     messages=messages,
                     tools=openai_tools,
                     tool_choice="auto"

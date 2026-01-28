@@ -14,7 +14,6 @@ from vcdvcd import VCDVCD
 from decimal import Decimal
 import re
 import os
-from mcp.server.fastmcp.exceptions import ToolError
 
 # mcp_linux_tools.py
 import os
@@ -50,22 +49,19 @@ def _normalize_and_guard(path: str) -> str:
     return p
 
 @mcp.tool()
-def ls(path: str = ".", args: str = "") -> str:
+def ls(input: Dict[str, Any]) -> Dict[str, Any]:
+
     """
-    This function Runs `ls {args} {path}` in the terminal and returns terminal output.
-    
-    :param path: The directory path to list files for. Defaults to current directory.
-    :param args: Additional ls command arguments (e.g., "-l or -lrt").
+    This function Runs `ls -lrth {path}` in the terminal and return terminal output.
     """
     return_dict = 0
-    path_in = path #_normalize_and_guard(input.get("path", "."))
-    args_in = args
-    if not os.path.exists(path_in):
-        raise ToolError(f"Path does not exist: {path_in}")
-	
-    cmd = f"ls {args_in} {path_in}"
+    path = _normalize_and_guard(input.get("path", "."))
+
+    if not os.path.exists(path):
+        raise ToolError(f"Path does not exist: {path}")
+
     result = subprocess.run(
-        cmd,
+        ["ls", "-lrth", path],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -79,7 +75,7 @@ def ls(path: str = ".", args: str = "") -> str:
 
     res = {
         "path": path,
-        "command": cmd,
+        "command": "ls -lrth",
         "output": output
     }
     if return_dict==1:
@@ -89,29 +85,23 @@ def ls(path: str = ".", args: str = "") -> str:
       temp = temp + f" COMMAND 	: " + res["command"] + "\n"
       temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
       return temp
-
-import shlex
-
+    
 @mcp.tool()
-def grep(regr: str, path: str, opts: str = "-ri") -> str:
-    """
-    Runs `grep {opts} {regr} {path}` in the terminal and returns the output.
+def grep (input: Dict[str, Any]) -> Dict[str, Any]:
 
-    :param regr: The regular expression or pattern to search for.
-    :param path: The file or directory path to search within.
-    :param opts: Grep options (e.g., '-i' for case-insensitive, '-l' for filenames only). Defaults to '-ri'.
+    """
+    This function Runs `grep {opts} {regr} {path}` in the terminal and return terminal output.
     """
     return_dict = 0
-    path_in = path #_normalize_and_guard(input.get("path", "."))
-    opts_in = opts #input.get("opts", ".")
-    regr_in = shlex.quote(regr) #input.get("regr", ".")
+    path = _normalize_and_guard(input.get("path", "."))
+    opts = input.get("opts", ".")
+    regr = input.get("regr", ".")
     
-    if not os.path.exists(path_in):
-        raise ToolError(f"Path does not exist: {path_in}")
+    if not os.path.exists(path):
+        raise ToolError(f"Path does not exist: {path}")
     
-    cmd = f"grep {opts_in} {regr_in} {path_in}"
     result = subprocess.run(
-        cmd,
+        ["grep", opts, regr, path],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -125,8 +115,8 @@ def grep(regr: str, path: str, opts: str = "-ri") -> str:
     output = result.stdout.rstrip("\n")
     
     res = {
-        "path": path_in,
-        "command": cmd,
+        "path": path,
+        "command": f"grep {opts} {regr} {path}" ,
         "output": output        
     }
     if return_dict==1:
@@ -140,24 +130,22 @@ def grep(regr: str, path: str, opts: str = "-ri") -> str:
 
 # @TODO I need to change the argv passed tot he subprocess for the moment this is working!!!
 @mcp.tool()
-def find(path: str = ".", args: str = "") -> str:
-    """
-    Runs `find {path} {args}` in the terminal and returns output.
+def find (input: Dict[str, Any]) -> Dict[str, Any]:
 
-    :param path: The directory path to start the search.
-    :param args: Additional find command arguments (e.g., '-name *.py').
+    """
+    This function Runs `find {path} {args} ` in the terminal and return terminal output.
     """
     return_dict = 0
-    path_in = path #_normalize_and_guard(path)
-    args_in = args
+    path = _normalize_and_guard(input.get("path", "."))
+    args = input.get("args")
     #print (f"args are : ", args)
     #cmd = ["find", path, args]
     #cmd2 =  ["find", ".", "-name mcp_server*.py"]
-    cmd = f"find {path_in} {args_in}"
+    cmd = f"find {path} {args}"
     #print (f"cmd : {cmd3}")
     
-    if not os.path.exists(path_in):
-        raise ToolError(f"Path does not exist: {path_in}")
+    if not os.path.exists(path):
+        raise ToolError(f"Path does not exist: {path}")
     
     result = subprocess.run(
         args=cmd,
@@ -174,7 +162,7 @@ def find(path: str = ".", args: str = "") -> str:
 
     output = result.stdout.rstrip("\n")
     res = {
-      "path": path_in,
+      "path": path,
       "command": cmd ,
       "output": output        
       }
@@ -187,22 +175,19 @@ def find(path: str = ".", args: str = "") -> str:
       return temp
 
 @mcp.tool()
-def cat(path: str, args: str = "") -> str:
+def cat (input: Dict[str, Any]) -> Dict[str, Any]:
+
     """
-    This function Runs `cat {args} {path}` in the terminal and returns terminal output.
-    
-    :param path: The path to the file you want to read.
-    :param args: Additional cat flags (e.g., '-n' for line numbers).
+    This function Runs `cat {file path} {args} ` in the terminal and return terminal output.
     """
     return_dict = 0
-    path_in = path #_normalize_and_guard(input.get("path", "."))
-    args_in = args #input.get("args")
-    cmd = f"cat {path_in} {args_in}"
+    path = _normalize_and_guard(input.get("path", "."))
+    args = input.get("args")
+    cmd = f"cat {path} {args}"
     
-    if not os.path.exists(path_in):
-        raise ToolError(f"Path does not exist: {path_in}")
+    if not os.path.exists(path):
+        raise ToolError(f"Path does not exist: {path}")
     
-    cmd = f"cat {args_in} {path_in}"
     result = subprocess.run(
         args=cmd,
         stdout=subprocess.PIPE,
@@ -218,7 +203,7 @@ def cat(path: str, args: str = "") -> str:
 
     output = result.stdout.rstrip("\n")
     res = {
-      "path": path_in,
+      "path": path,
       "command": cmd ,
       "output": output        
       }
@@ -231,21 +216,19 @@ def cat(path: str, args: str = "") -> str:
       return temp
 
 @mcp.tool()
-def head(path: str, args: str = "-n 20") -> str:
+def head (input: Dict[str, Any]) -> Dict[str, Any]:
+
     """
-    This function Runs `head {args} {path}` in the terminal and returns the first part of a file.
-    
-    :param path: The path to the file you want to inspect.
-    :param args: Flags for head (e.g., '-n 50' for 50 lines). Defaults to '-n 20'.
+    This function Runs `head {file path} {args}` in the terminal and return terminal output.
     """
     return_dict = 0
-    path_in = path #_normalize_and_guard(input.get("path", "."))
-    args_in = args #input.get("args")
+    path = _normalize_and_guard(input.get("path", "."))
+    args = input.get("args")
+    cmd = f"head {path} {args}"
     
-    if not os.path.exists(path_in):
-        raise ToolError(f"Path does not exist: {path_in}")
+    if not os.path.exists(path):
+        raise ToolError(f"Path does not exist: {path}")
     
-    cmd = f"head {args_in} {path_in}"
     result = subprocess.run(
         args=cmd,
         stdout=subprocess.PIPE,
@@ -260,7 +243,7 @@ def head(path: str, args: str = "-n 20") -> str:
 
     output = result.stdout.rstrip("\n")
     res = {
-      "path": path_in,
+      "path": path,
       "command": cmd ,
       "output": output        
       }
@@ -273,22 +256,19 @@ def head(path: str, args: str = "-n 20") -> str:
       return temp
 
 @mcp.tool()
-def tail(path: str, args: str = "-n 20") -> str:
+def tail (input: Dict[str, Any]) -> Dict[str, Any]:
+
     """
-    This function Runs `tail {args} {path}` in the terminal and returns the last part of a file.
-    
-    :param path: The path to the file you want to inspect.
-    :param args: Flags for tail (e.g., '-n 50' for the last 50 lines). Defaults to '-n 20'.
+    This function Runs `tail {file path} {args}` in the terminal and return terminal output.
     """
     return_dict = 0
-    path_in = path #_normalize_and_guard(input.get("path", "."))
-    args_in = args #input.get("args")
+    path = _normalize_and_guard(input.get("path", "."))
+    args = input.get("args")
+    cmd = f"tail {path} {args}"
     
+    if not os.path.exists(path):
+        raise ToolError(f"Path does not exist: {path}")
     
-    if not os.path.exists(path_in):
-        raise ToolError(f"Path does not exist: {path_in}")
-    
-    cmd = f"tail {args_in} {path_in}"
     result = subprocess.run(
         args=cmd,
         stdout=subprocess.PIPE,
@@ -303,7 +283,7 @@ def tail(path: str, args: str = "-n 20") -> str:
 
     output = result.stdout.rstrip("\n")
     res = {
-      "path": path_in,
+      "path": path,
       "command": cmd ,
       "output": output        
       }
@@ -316,15 +296,14 @@ def tail(path: str, args: str = "-n 20") -> str:
       return temp
 
 @mcp.tool()
-def ps(args: str = "ux") -> str:
+def ps (input: Dict[str, Any]) -> Dict[str, Any]:
+
     """
-    This function runs `ps {args}` in the terminal and returns the process status output.
-    
-    :param args: Flags for the ps command (e.g., 'ux', '-ef', or '-aux'). Defaults to 'ux'.
+    This function Runs `ps {args}` in the terminal and return terminal output.
     """
     return_dict = 0
-    args_in = args #input.get("args")
-    cmd = f"ps {args_in}"
+    args = input.get("args")
+    cmd = f"ps {args}"
     
     result = subprocess.run(
         args=cmd,
@@ -351,15 +330,14 @@ def ps(args: str = "ux") -> str:
       return temp
 
 @mcp.tool()
-def which(args: str) -> str:
+def which (input: Dict[str, Any]) -> Dict[str, Any]:
+
     """
-    Runs `which {args}` to find the executable path of a command.
-    
-    :param command_name: The name of the executable to locate (e.g., 'python3', 'ls', 'vcs').
+    This function Runs `which {args}` in the terminal and return terminal output.
     """
     return_dict = 0
-    args_in = args #input.get("args")
-    cmd = f"which {args_in}"
+    args = input.get("args")
+    cmd = f"which {args}"
     
     result = subprocess.run(
         args=cmd,
@@ -386,14 +364,13 @@ def which(args: str) -> str:
       return temp
 
 @mcp.tool()
-def env(args: str = "") -> str:
+def env (input: Dict[str, Any]) -> Dict[str, Any]:
+
     """
-    This function runs `env {args}` in the terminal and returns the environment variables.
-    
-    :param args: Optional flags for the env command, or use 'grep' with it to filter.
+    This function Runs `env {args}` in the terminal and return terminal output.
     """
     return_dict = 0
-    args_in = args #input.get("args")
+    args = input.get("args")
     cmd = f"env {args}"
     
     result = subprocess.run(
@@ -421,27 +398,24 @@ def env(args: str = "") -> str:
       return temp
 
 @mcp.tool()
-def diff(path1: str, path2: str, args: str = "-u") -> str:
+def diff (input: Dict[str, Any]) -> Dict[str, Any]:
+
     """
-    Runs `diff {args} {path1} {path2}` in the terminal and returns the differences.
-    
-    :param path1: The first file or directory path to compare.
-    :param path2: The second file or directory path to compare.
-    :param args: Flags for diff (e.g., '-u' for unified format, '-y' for side-by-side). Defaults to '-u'.
+    This function Runs `diff {args} {path1} {path2} ` in the terminal and return terminal output.
     """
     return_dict = 0
-    args_in = args #input.get("args")
+    args = input.get("args")
 
-    path1_in = path1 #_normalize_and_guard(input.get("path1", "."))
-    if not os.path.exists(path1_in):
-        raise ToolError(f"Path1 does not exist: {path1_in}")
+    path1 = _normalize_and_guard(input.get("path1", "."))
+    if not os.path.exists(path1):
+        raise ToolError(f"Path1 does not exist: {path1}")
     
-    path2_in = path2 #_normalize_and_guard(input.get("path2", "."))
-    if not os.path.exists(path2_in):
-        raise ToolError(f"Path2 does not exist: {path2_in}")
+    path2 = _normalize_and_guard(input.get("path2", "."))
+    if not os.path.exists(path2):
+        raise ToolError(f"Path2 does not exist: {path2}")
     
     
-    cmd = f"diff {args_in} {path1_in} {path2_in}"
+    cmd = f"diff {args} {path1} {path2}"
     
     result = subprocess.run(
         args=cmd,
@@ -458,8 +432,8 @@ def diff(path1: str, path2: str, args: str = "-u") -> str:
 
     output = result.stdout.rstrip("\n")
     res = {
-      "path1": path1_in ,
-      "path2": path2_in ,
+      "path1": path1 ,
+      "path2": path2 ,
       "command": cmd ,
       "output": output        
       }
