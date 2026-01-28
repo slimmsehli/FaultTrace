@@ -164,7 +164,7 @@ async def run_agent_loop():
                     # ROUTING: Use the dictionary to pick the right session
                     target_session = tool_to_session[fname]
                     result = await target_session.call_tool(fname, fargs)
-                    print(f"\n[Iteration {i + 1}] [TOOL] : Tool response : \n////\n {result.} \n////\n")
+                    print(f"\n[Iteration {i + 1}] [TOOL] : Tool response : \n////\n {result} \n////\n")
 
                     # note : add the tool response to the message history
                     messages.append({
