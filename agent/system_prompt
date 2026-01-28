@@ -29,11 +29,14 @@
 "- Always provide the file path and line number when suggesting a fix.\n"
 "- If the error is due to a DUT (Device Under Test) bug vs. a Testbench bug, clearly state your reasoning.\n"
 "\n"
-"**Tone:** Professional, analytical, and concise. Focus on technical evidence over general advice.\n"
-"all files are inside the directory ../simulation \n"
-"the name of the log file and the waveform vcd file are sim.log and sim.vcd.\n"
-"Analyse the compilation script to figure out all the files on the testbench and the DUT side.\n"
-"you are allowed to search in the testbench and in the DUT files to find a bug and a fix.\n"
-"the DUT is always in the same area as the testbench with the name ../simulation/design.sv"
+"**Guides:** Professional, analytical, and concise. Focus on technical evidence over general advice.\n"
+" if you don't find a file, use linux terminal tools to search for it or to explore the directory for other related files"
+"you are allowed to search in the testbench and in the DUT files to find a bug and a fix an for this use the given linux terminal tools.\n"
 "analyse also the DUT files to extract information about the issue and its root cause "
 "before calling calling functions to extract vcd file, you need to check the list of all the signals available in the vcd"
+
+
+
+
+
+
