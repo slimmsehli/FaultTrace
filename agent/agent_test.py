@@ -15,9 +15,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from dotenv import load_dotenv
 
-# fo debugging messages
-
-#
+# load the .env variables 
 load_dotenv()
 
 # open AI client
@@ -26,9 +24,12 @@ client = OpenAI()
 ### this part was added to load the system prompt from external file
 from pathlib import Path
 system_prompt = Path("system_prompt").read_text()
-tools_list = json.loads(Path("../server/tools_register.json").read_text(encoding="utf-8"))
-#load mcp server config
-cfg = json.loads(Path("../server/mcp_servers.json").read_text(encoding="utf-8"))
+
+## @NOTE : only loaded in the previous version where the tools are loaded manaully 
+#tools_list = json.loads(Path("../server/tools_register.json").read_text(encoding="utf-8"))
+
+# @NOTE : load mcp server config :  removed since we are checking the available tools on the server directly with auto check
+#cfg = json.loads(Path("../server/mcp_servers.json").read_text(encoding="utf-8"))
 
 def load_tools(fetched_tools_list):
     # convert the MCP tools to openai tool format
@@ -62,7 +63,7 @@ def load_tools(fetched_tools_list):
 # also the compilation script , the log file, the vcd file are given to the agent manually in fixed format
 
 async def run_agent_loop():
-    # note : call the MCP server that contains all the tools
+    # note : call the MCP servers, only two now , one for RTL parsing files, vcs and logs and the other for linux terminal commands
     server_params1 = StdioServerParameters(command="python", args=["../server/mcp_server_str_wrapper.py"])
     server_params2 = StdioServerParameters(command="python", args=["../server/mcp_server_terminal.py"])
 
@@ -89,16 +90,14 @@ async def run_agent_loop():
                 mcp_tools.append(t)
                 tool_to_session[t.name] = session2
 
-            # 4. Format for OpenAI and save to file
+            # Format for OpenAI and save to file
             openai_tools = [
                 {"type": "function",
                  "function": {"name": t.name, "description": t.description, "parameters": t.inputSchema}}
                 for t in mcp_tools
             ]
-            #print(f"Successfully loaded {len(openai_tools)} tools from MCP server.")
-            #with open("loaded_tools", "w", encoding="utf-8") as f:
-            #    f.write(json.dumps(openai_tools, indent=2))
-            print(f"Successfully loaded {len(openai_tools)} tools from MCP server.")
+            
+            print(f"[INFO] : Successfully loaded {len(openai_tools)} tools from MCP server.")
             with open("loaded_tools.log", "w", encoding="utf-8") as f:
                 f.write(f"Total tools found: {len(mcp_tools)}\n")
                 f.write("-" * 30 + "\n")
@@ -108,7 +107,7 @@ async def run_agent_loop():
                     f.write(f"Parameters Schema: {json.dumps(tool.inputSchema, indent=2)}\n")
                     f.write("-" * 30 + "\n")
 
-            print("Successfully saved tool list to 'loaded_tools'.")
+            print("[INFO] : Successfully saved tool list to 'loaded_tools'.")
 
             # System prompt for the Agent with the MCP tools
             messages = [
@@ -126,7 +125,7 @@ async def run_agent_loop():
 
             # note : max iterations ofr the agent thingking loop
             max_iterations = 15
-
+						print(f"[INFO] : Starting the Agent ...")
             # Main loop
             for i in range(max_iterations):
                 print(f"\n[Iteration {i + 1}] [AGENT] : Thinking...")
