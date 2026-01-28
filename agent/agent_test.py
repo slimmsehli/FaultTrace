@@ -125,7 +125,7 @@ async def run_agent_loop():
 
             # note : max iterations ofr the agent thingking loop
             max_iterations = 15
-						print(f"[INFO] : Starting the Agent ...")
+            print(f"[INFO] : Starting the Agent ...")
             # Main loop
             for i in range(max_iterations):
                 print(f"\n[Iteration {i + 1}] [AGENT] : Thinking...")
