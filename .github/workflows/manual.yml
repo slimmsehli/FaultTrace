@@ -29,4 +29,13 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           cd agent
-          python agent_test.py
+          python agent_test.py |& tee run.log
+   
+           Count occurrences
+           true_count=$(grep -c 'isError=True' run.log || true)
+           false_count=$(grep -c 'isError=False' run.log || true)
+           
+           echo "---- Run Summary ----"
+           echo "isError=True  : ${true_count}"
+           echo "isError=False : ${false_count}"
+
