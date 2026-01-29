@@ -21,9 +21,10 @@ load_dotenv()
 # open AI client
 client = OpenAI()
 
-### this part was added to load the system prompt from external file
+## load external prompts
 from pathlib import Path
-system_prompt = Path("system_prompt").read_text()
+system_prompt = Path("system_prompt_tools_test_CI").read_text() # load system prompt
+user_prompt = Path("user_prompt_tool_test_CI").read_text() #this is only to be able to change the initial request made to the agent
 
 ## @NOTE : only loaded in the previous version where the tools are loaded manaully 
 #tools_list = json.loads(Path("../server/tools_register.json").read_text(encoding="utf-8"))
@@ -31,39 +32,12 @@ system_prompt = Path("system_prompt").read_text()
 # @NOTE : load mcp server config :  removed since we are checking the available tools on the server directly with auto check
 #cfg = json.loads(Path("../server/mcp_servers.json").read_text(encoding="utf-8"))
 
-def load_tools(fetched_tools_list):
-    # convert the MCP tools to openai tool format
-    openai_tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": tool.name,
-                "description": tool.description,
-                "parameters": tool.inputSchema,
-            }
-        }
-        for tool in fetched_tools_list.tools
-    ]
-    print(f"Successfully loaded {len(openai_tools)} tools from MCP server.")
-    with open("loaded_tools.log", "w", encoding="utf-8") as f:
-        f.write(f"Total tools found: {len(fetched_tools_list.tools)}\n")
-        f.write("-" * 30 + "\n")
-        for tool in fetched_tools_list.tools:
-            f.write(f"Tool Name: {tool.name}\n")
-            f.write(f"Description: {tool.description}\n")
-            f.write(f"Parameters Schema: {json.dumps(tool.inputSchema, indent=2)}\n")
-            f.write("-" * 30 + "\n")
-
-    print("Successfully saved tool list to 'loaded_tools'.")
-
-    return openai_tools
-
-
-# note : log file and vcd file are always in the "./simulation" directory for now
+# @NOTE : log file and vcd file are always in the "../simulation" directory for now
 # also the compilation script , the log file, the vcd file are given to the agent manually in fixed format
 
 async def run_agent_loop():
-    # note : call the MCP servers, only two now , one for RTL parsing files, vcs and logs and the other for linux terminal commands
+    # @NOTE : call the MCP servers, only two now , one for RTL parsing files, vcs and logs 
+    # and the other for linux terminal commands
     server_params1 = StdioServerParameters(command="python", args=["../server/mcp_server_str_wrapper.py"])
     server_params2 = StdioServerParameters(command="python", args=["../server/mcp_server_terminal.py"])
 
@@ -117,13 +91,11 @@ async def run_agent_loop():
                 },
                 {
                     "role": "user",
-                    "content": "Investigate the failure in './simulation/sim.log' and explain the code error."
+                    "content": user_prompt
                 }
             ]
 
-            ### Agent loop
-
-            # note : max iterations ofr the agent thingking loop
+            ### Agent loop : for now it is 15 iterations but this will be changed to internal loop
             max_iterations = 15
             print(f"[INFO] : Starting the Agent ...")
             # Main loop

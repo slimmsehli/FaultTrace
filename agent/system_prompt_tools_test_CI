@@ -1,2 +1,3 @@
-"test all the available tools from the mcp server on this directory : /home/slim/RCAnalysis/simulation/ \n"
-
+"test all the available tools from the mcp server on this directory : ../simulation/ \n"
+"run all the tools from the mcp servers and test them. \n"
+"if a tool response with an error, try again for no more than 3 timer per tool. \n"
