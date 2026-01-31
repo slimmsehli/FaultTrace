@@ -2,7 +2,7 @@
 #
 #
 #
-# This is a test for the ai main agent with a loop for response
+# This is a test for the AI main agent with a loop for response
 #
 #
 #
@@ -26,7 +26,10 @@ from pathlib import Path
 system_prompt = Path("system_prompt_tools_test_CI").read_text() # load system prompt
 user_prompt = Path("user_prompt_tool_test_CI").read_text() #this is only to be able to change the initial request made to the agent
 
-## @NOTE : only loaded in the previous version where the tools are loaded manaully 
+# GPT model to be used
+gpt_model = "gpt-5-mini" #"gpt-4o"
+
+## @NOTE : only loaded in the previous version where the tools are loaded manauly
 #tools_list = json.loads(Path("../server/tools_register.json").read_text(encoding="utf-8"))
 
 # @NOTE : load mcp server config :  removed since we are checking the available tools on the server directly with auto check
@@ -96,14 +99,14 @@ async def run_agent_loop():
             ]
 
             ### Agent loop : for now it is 15 iterations but this will be changed to internal loop
-            max_iterations = 15
+            max_iterations = 50
             print(f"[INFO] : Starting the Agent ...")
             # Main loop
             for i in range(max_iterations):
                 print(f"\n[Iteration {i + 1}] [AGENT] : Thinking...")
                 # note : get a response from the LLM
                 response = client.chat.completions.create(
-                    model="gpt-5-mini", #gpt-4o",
+                    model=gpt_model,
                     messages=messages,
                     tools=openai_tools,
                     tool_choice="auto"

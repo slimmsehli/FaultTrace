@@ -1,4 +1,4 @@
-Total tools found: 29
+Total tools found: 30
 ------------------------------
 Tool Name: parse_log_for_errors
 Description: Finds the VCD file and any Verilog errors in the log.
@@ -754,6 +754,16 @@ Parameters Schema: {
     "end"
   ],
   "title": "vcd_get_signals_aligned_in_windowArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: pwd
+Description: 
+    This function Runs `pwd` in the terminal and returns terminal output.
+    
+Parameters Schema: {
+  "properties": {},
+  "title": "pwdArguments",
   "type": "object"
 }
 ------------------------------

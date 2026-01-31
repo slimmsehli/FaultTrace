@@ -1,1 +1,1 @@
-" test the tools from the MCP server .\n"
+" test all the tools from all MCP servers and give me a report with each tool failing/passing results.\n"

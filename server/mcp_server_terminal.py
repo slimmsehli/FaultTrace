@@ -49,6 +49,39 @@ def _normalize_and_guard(path: str) -> str:
         raise ToolError(f"Path escapes workspace: {path}")
     return p
 
+
+@mcp.tool()
+def pwd() -> str:
+    """
+    This function Runs `pwd` in the terminal and returns terminal output.
+    """
+    return_dict = 0
+
+    cmd = f"pwd"
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        timeout=5,
+    )
+
+    if result.returncode != 0:
+        raise ToolError(result.stderr.strip())
+
+    output = result.stdout.rstrip("\n")
+
+    res = {
+        "command": cmd,
+        "output": output
+    }
+    if return_dict == 1:
+        return res
+    else:
+        temp = f" COMMAND 	: " + res["command"] + "\n"
+        temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
+        return temp
+
 @mcp.tool()
 def ls(path: str = ".", args: str = "") -> str:
     """
