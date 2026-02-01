@@ -1,4 +1,4 @@
-Total tools found: 30
+Total tools found: 31
 ------------------------------
 Tool Name: parse_log_for_errors
 Description: Finds the VCD file and any Verilog errors in the log.
@@ -757,6 +757,30 @@ Parameters Schema: {
   "type": "object"
 }
 ------------------------------
+Tool Name: tree
+Description: 
+    This function Runs `tree {args} {path}` in the terminal and returns terminal output.
+
+    :param path: The directory path to use the tool on. Defaults to current directory.
+    :param args: Additional tree command arguments.
+    
+Parameters Schema: {
+  "properties": {
+    "path": {
+      "default": ".",
+      "title": "Path",
+      "type": "string"
+    },
+    "args": {
+      "default": "",
+      "title": "Args",
+      "type": "string"
+    }
+  },
+  "title": "treeArguments",
+  "type": "object"
+}
+------------------------------
 Tool Name: pwd
 Description: 
     This function Runs `pwd` in the terminal and returns terminal output.
@@ -770,7 +794,7 @@ Parameters Schema: {
 Tool Name: ls
 Description: 
     This function Runs `ls {args} {path}` in the terminal and returns terminal output.
-    
+
     :param path: The directory path to list files for. Defaults to current directory.
     :param args: Additional ls command arguments (e.g., "-l or -lrt").
     
@@ -850,7 +874,7 @@ Parameters Schema: {
 Tool Name: cat
 Description: 
     This function Runs `cat {args} {path}` in the terminal and returns terminal output.
-    
+
     :param path: The path to the file you want to read.
     :param args: Additional cat flags (e.g., '-n' for line numbers).
     
@@ -876,7 +900,7 @@ Parameters Schema: {
 Tool Name: head
 Description: 
     This function Runs `head {args} {path}` in the terminal and returns the first part of a file.
-    
+
     :param path: The path to the file you want to inspect.
     :param args: Flags for head (e.g., '-n 50' for 50 lines). Defaults to '-n 20'.
     
@@ -902,7 +926,7 @@ Parameters Schema: {
 Tool Name: tail
 Description: 
     This function Runs `tail {args} {path}` in the terminal and returns the last part of a file.
-    
+
     :param path: The path to the file you want to inspect.
     :param args: Flags for tail (e.g., '-n 50' for the last 50 lines). Defaults to '-n 20'.
     
@@ -928,7 +952,7 @@ Parameters Schema: {
 Tool Name: ps
 Description: 
     This function runs `ps {args}` in the terminal and returns the process status output.
-    
+
     :param args: Flags for the ps command (e.g., 'ux', '-ef', or '-aux'). Defaults to 'ux'.
     
 Parameters Schema: {
@@ -946,7 +970,7 @@ Parameters Schema: {
 Tool Name: which
 Description: 
     Runs `which {args}` to find the executable path of a command.
-    
+
     :param command_name: The name of the executable to locate (e.g., 'python3', 'ls', 'vcs').
     
 Parameters Schema: {
@@ -966,7 +990,7 @@ Parameters Schema: {
 Tool Name: env
 Description: 
     This function runs `env {args}` in the terminal and returns the environment variables.
-    
+
     :param args: Optional flags for the env command, or use 'grep' with it to filter.
     
 Parameters Schema: {
@@ -984,7 +1008,7 @@ Parameters Schema: {
 Tool Name: diff
 Description: 
     Runs `diff {args} {path1} {path2}` in the terminal and returns the differences.
-    
+
     :param path1: The first file or directory path to compare.
     :param path2: The second file or directory path to compare.
     :param args: Flags for diff (e.g., '-u' for unified format, '-y' for side-by-side). Defaults to '-u'.

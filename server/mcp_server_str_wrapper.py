@@ -403,7 +403,7 @@ def vcd_get_signal_values_in_timeframe(path: str, signal_name: str, start: Optio
     return f"Signal {signal_name} values in the timewindow {start}-{end} are : {out}"
 
 ### this version of the function return a scalar to be used by another local function so no need for a string return type
-@mcp.tool()
+### this is not a tool
 def vcd_get_signal_values_in_timeframe_scal(path: str, signal_name: str, start: Optional[Union[str, float, int]], end: Optional[Union[str, float, int]], include_start_prev: bool = True) -> Any:
     """
     Return the values of a signal at a specific time window.

@@ -5,3 +5,4 @@
 " Use pwd to know where you are .\n"
 " Test all the functions"
 " Always run vcd_get_signals first to see the available signals in the vcd file"
+" Always use pwd tool to see where you are then use an absolute path for files and directories"
