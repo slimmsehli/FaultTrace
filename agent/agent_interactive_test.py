@@ -7,13 +7,16 @@
 #
 #
 ######################################################
-
+import time
 import asyncio
 import json
+import sys
 from openai import OpenAI
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from dotenv import load_dotenv
+from pathlib import Path
+from contextlib import AsyncExitStack
 
 # load the .env variables 
 load_dotenv()
@@ -23,11 +26,17 @@ client = OpenAI()
 
 ## load external prompts
 from pathlib import Path
-system_prompt = Path("../prompts/system_prompt_tools_test_CI").read_text() # load system prompt
-user_prompt = Path("../prompts/user_prompt_tool_test_CI").read_text() #this is only to be able to change the initial request made to the agent
+system_prompt = Path("../prompts/system_prompt").read_text() # load system prompt
+user_prompt = Path("../prompts/user_prompt").read_text() #this is only to be able to change the initial request made to the agent
 
 # GPT model to be used
 gpt_model = "gpt-5-mini" #"gpt-4o"
+
+## MCP servers
+SERVER_CONFIGS = [
+    {"command": "python", "args": ["../server/mcp_server_str_wrapper.py"]},
+    {"command": "python", "args": ["../server/mcp_server_terminal.py"]}
+]
 
 ## @NOTE : only loaded in the previous version where the tools are loaded manauly
 #tools_list = json.loads(Path("../server/tools_register.json").read_text(encoding="utf-8"))
@@ -37,9 +46,105 @@ gpt_model = "gpt-5-mini" #"gpt-4o"
 
 # @NOTE : log file and vcd file are always in the "../simulation" directory for now
 # also the compilation script , the log file, the vcd file are given to the agent manually in fixed format
-
 async def run_agent_loop():
-    # @NOTE : call the MCP servers, only two now , one for RTL parsing files, vcs and logs 
+    async with AsyncExitStack() as stack: # multiple asynchronous context
+        sessions = []
+        tool_to_session = {}
+        openai_tools = []
+        print("[INFO] : Loading Connecting to MCP servers ...")
+
+        for cfg in SERVER_CONFIGS:
+            params = StdioServerParameters(command=cfg["command"], args=cfg["args"])
+            # connect to the stdio transport
+            read, write = await stack.enter_async_context(stdio_client(params))
+            # create session
+            session = await stack.enter_async_context(ClientSession(read, write))
+            await session.initialize()
+            sessions.append(session)
+
+            # register tools
+            res = await session.list_tools()
+            for t in res.tools:
+                tool_to_session[t.name] = session
+                openai_tools.append({
+                    "type": "function",
+                    "function": {
+                        "name": t.name,
+                        "description": t.description,
+                        "parameters": t.inputSchema
+                    }
+                })
+
+        print(f"[INFO] : {len(openai_tools)} tools loaded. System ready.")
+
+        # Initialize message history with system prompt
+        messages = [{"role": "system", "content": system_prompt}]
+
+        ##### main terminal loop
+
+        # --- LOOP 1: General Interaction Loop ---
+        while True:
+            user_input = input("\n[USER]: ")
+
+            # User-controlled exit condition
+            if user_input.lower() in ["exit", "quit"]:
+                print("[INFO] : Shutting down agent. Goodbye!")
+                break
+
+            # Add user message to history
+            messages.append({"role": "user", "content": user_input})
+
+            # --- LOOP 2: Autonomous Agent Reasoning (Max 20 Iterations) ---
+            print(f"[INFO] : Agent is starting work on your request...")
+
+            for i in range(20):
+                response = client.chat.completions.create(
+                    model=gpt_model,
+                    messages=messages,
+                    tools=openai_tools if openai_tools else None,
+                    tool_choice="auto"
+                )
+
+                response_message = response.choices[0].message
+                messages.append(response_message)
+
+                # 1. Print Agent's verbal response if it has one
+                if response_message.content:
+                    print(f"\n[Iteration {i + 1}] [AGENT]: {response_message.content}")
+
+                # 2. Check if the Agent is done (No more tool calls)
+                if not response_message.tool_calls:
+                    print(f"\n[INFO] : Agent completed the task in {i + 1} steps.")
+                    break  # Breaks Loop 2, goes back to Loop 1 for next User input
+
+                # 3. Handle Tool Execution
+                if response_message.tool_calls:
+                    for tool_call in response_message.tool_calls:
+                        fname = tool_call.function.name
+                        fargs = json.loads(tool_call.function.arguments)
+
+                        print(f"[Iteration {i + 1}] [TOOL]: ToolCall => {fname} with arguments {fargs}")
+
+                        target_session = tool_to_session[fname]
+                        result = await target_session.call_tool(fname, fargs)
+
+                        tool_output = result.content[0].text
+                        print(f"[Iteration {i + 1}] [TOOL]: ToolResult => {tool_output}")
+
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": fname,
+                            "content": result.content[0].text
+                        })
+                else:
+                    break
+            else:
+                # This executes if the for-loop reaches 20 without a 'break'
+                print("\n[WARNING] : Agent reached the maximum limit of 20 iterations.")
+
+    """
+    # @NOTE : call the MCP servers, only two now , one for RTL parsing files, vcs and logs
     # and the other for linux terminal commands
     server_params1 = StdioServerParameters(command="python", args=["../server/mcp_server_str_wrapper.py"])
     server_params2 = StdioServerParameters(command="python", args=["../server/mcp_server_terminal.py"])
@@ -148,6 +253,14 @@ async def run_agent_loop():
                         "name": fname,
                         "content": result.content[0].text
                     })
-
+    """
 if __name__ == "__main__":
-    asyncio.run(run_agent_loop())
+    start_time = 0
+    try:
+        start_time = time.perf_counter()
+        asyncio.run(run_agent_loop())
+    except KeyboardInterrupt:
+        print("\n[INFO] : Closing Agent ...")
+        end_time = time.perf_counter()
+        print(f"Execution time: {end_time - start_time:.4f} seconds")
+        sys.exit(0)
