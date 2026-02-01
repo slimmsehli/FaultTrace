@@ -7,11 +7,13 @@ Processing request of type ListToolsRequest
 Processing request of type CallToolRequest
 Processing request of type CallToolRequest
 Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
 [INFO] : Agent is starting work on your request...
 [Iteration 1] [TOOL]: ToolCall => find_first_uvm_error with arguments {'log_path': '/home/slim/FaultTrace/simulation/sim.log'}
 [Iteration 1] [TOOL]: ToolResult => First erro found at line 7, line : UVM_ERROR testbench.sv(146) @ 1795: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase
 
-[Iteration 2] [TOOL]: ToolCall => get_error_context with arguments {'log_path': '/home/slim/FaultTrace/simulation/sim.log', 'error_line': 7, 'window': 50}
+[Iteration 2] [TOOL]: ToolCall => get_error_context with arguments {'log_path': '/home/slim/FaultTrace/simulation/sim.log', 'error_line': 7, 'window': 40}
 [Iteration 2] [TOOL]: ToolResult => Command: C:\Users\dmseh\OneDrive\Desktop\ai\RCAnalysis\simv +vcs+lic+wait +UVM_NO_RELNOTES -l sim.log
 Chronologic VCS simulator copyright 1991-2025
 Contains Synopsys proprietary information.
@@ -20,8 +22,31 @@ UVM_INFO @ 0: reporter [RNTST] Running test i2c_test...
 UVM_INFO testbench.sv(84) @ 0: uvm_test_top.env.agent.driver [DRV] Starting Write: Addr=50 Data=95
 UVM_ERROR testbench.sv(146) @ 1795: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase
 
-[Iteration 3] [TOOL]: ToolCall => ls with arguments {'path': '/home/slim/FaultTrace/simulation/', 'args': '-la'}
-[Iteration 3] [TOOL]: ToolResult =>  PATH 		: /home/slim/FaultTrace/simulation/
+[Iteration 3] [TOOL]: ToolCall => grep with arguments {'regr': 'NACK \\(No ACK\\) received during Address phase', 'path': '/home/slim/FaultTrace/simulation/', 'opts': '-n'}
+[Iteration 3] [TOOL]: ToolResult => Error executing tool grep: grep: /home/slim/FaultTrace/simulation/: Is a directory
+[Iteration 4] [TOOL]: ToolCall => search_log_keyword with arguments {'log_path': '/home/slim/FaultTrace/simulation/sim.log', 'keyword': 'UVM_ERROR', 'context_lines': 10}
+[Iteration 4] [TOOL]: ToolResult => --- Results for 'UVM_ERROR' near line 7 ---
+Command: C:\Users\dmseh\OneDrive\Desktop\ai\RCAnalysis\simv +vcs+lic+wait +UVM_NO_RELNOTES -l sim.log
+Chronologic VCS simulator copyright 1991-2025
+Contains Synopsys proprietary information.
+Compiler version X-2025.06-SP2_Full64; Runtime version X-2025.06-SP2_Full64;  Dec 23 10:01 2025
+UVM_INFO @ 0: reporter [RNTST] Running test i2c_test...
+UVM_INFO testbench.sv(84) @ 0: uvm_test_top.env.agent.driver [DRV] Starting Write: Addr=50 Data=95
+UVM_ERROR testbench.sv(146) @ 1795: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase
+UVM_ERROR testbench.sv(146) @ 3545: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Data phase
+UVM_INFO testbench.sv(84) @ 3945: uvm_test_top.env.agent.driver [DRV] Starting Write: Addr=50 Data=5
+UVM_ERROR testbench.sv(146) @ 5745: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase
+UVM_ERROR testbench.sv(146) @ 7495: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Data phase
+UVM_INFO testbench.sv(84) @ 7895: uvm_test_top.env.agent.driver [DRV] Starting Write: Addr=50 Data=af
+UVM_ERROR testbench.sv(146) @ 9695: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase
+UVM_ERROR testbench.sv(146) @ 11445: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Data phase
+UVM_INFO /global/apps/vcs_2025.06-SP2/etc/uvm-1.2/base/uvm_objection.svh(1276) @ 11845: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+UVM_INFO /global/apps/vcs_2025.06-SP2/etc/uvm-1.2/base/uvm_report_server.svh(904) @ 11845: reporter [UVM/REPORT/SERVER] 
+--- UVM Report Summary ---
+
+--- End of Snippet ---
+[Iteration 5] [TOOL]: ToolCall => ls with arguments {'path': '/home/slim/FaultTrace/simulation/', 'args': '-la'}
+[Iteration 5] [TOOL]: ToolResult =>  PATH 		: /home/slim/FaultTrace/simulation/
  COMMAND 	: ls-la/home/slim/FaultTrace/simulation/
  OUTPUT 	: 
 total 6112
@@ -36,8 +61,9 @@ drwxr-xr-x 12 slim slim    4096 Feb  1 22:27 ..
 -rw-r--r--  1 slim slim   39991 Feb  1 18:03 sim.vcd
 -rw-r--r--  1 slim slim    8590 Feb  1 18:03 testbench.sv
 
-[Iteration 4] [TOOL]: ToolCall => get_source_snippet with arguments {'file_path': '/home/slim/FaultTrace/simulation/testbench.sv', 'line_number': 1, 'context': 300}
-[Iteration 4] [TOOL]: ToolResult => --- Source: /home/slim/FaultTrace/simulation/testbench.sv (Lines 1 to 286) ---
+[Iteration 6] [TOOL]: ToolCall => get_source_snippet with arguments {'file_path': '/home/slim/FaultTrace/simulation/testbench.sv', 'line_number': 1, 'context': 240}
+Processing request of type CallToolRequest
+[Iteration 6] [TOOL]: ToolResult => --- Source: /home/slim/FaultTrace/simulation/testbench.sv (Lines 1 to 241) ---
 // i2c_uvm_tb.sv
 
 `include "design.sv"
@@ -279,63 +305,11 @@ class i2c_test extends uvm_test;
 endclass
 
 // ----------------------------------------------------------------------------
-// 7. Top Module
-// ----------------------------------------------------------------------------
-module top;
-    
-    logic clk;
-    logic rst_n;
 
-    // Clock Generation
-    initial begin
-        clk = 0;
-        forever #5 clk = ~clk;
-    end
-
-    // Reset Generation
-    initial begin
-        rst_n = 0;
-        #20 rst_n = 1;
-    end
-
-    // Interface
-    i2c_if intf(clk, rst_n);
-
-    // Pull-up resistors
-    // Now valid because intf.scl and intf.sda are wires
-    pullup(intf.sda);
-    pullup(intf.scl);
-
-    // DUT Instantiation
-    i2c_slave_dut dut (
-        .clk(clk),
-        .rst_n(rst_n),
-        .scl(intf.scl), 
-        .sda(intf.sda)  
-    );
-
-    // UVM Start
-    initial begin
-      $dumpfile("sim.vcd");
-      //$dumpvars(0);
-      $dumpvars(0, top);
-        uvm_config_db#(virtual i2c_if)::set(null, "*", "vif", intf);
-        run_test("i2c_test");
-    end
-
-endmodule
+[Iteration 7] [TOOL]: ToolCall => get_source_snippet with arguments {'file_path': '/home/slim/FaultTrace/simulation/design.sv', 'line_number': 1, 'context': 400}
 Processing request of type CallToolRequest
 Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-
-[Iteration 5] [TOOL]: ToolCall => get_source_snippet with arguments {'file_path': '/home/slim/FaultTrace/simulation/design.sv', 'line_number': 1, 'context': 400}
-[Iteration 5] [TOOL]: ToolResult => --- Source: /home/slim/FaultTrace/simulation/design.sv (Lines 1 to 131) ---
+[Iteration 7] [TOOL]: ToolResult => --- Source: /home/slim/FaultTrace/simulation/design.sv (Lines 1 to 131) ---
 // i2c_slave_dut.sv
 module i2c_slave_dut (
     input  wire clk,      // System clock
@@ -467,33 +441,123 @@ module i2c_slave_dut (
     end
 
 endmodule
-[Iteration 6] [TOOL]: ToolCall => vcd_get_timescale_str with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd'}
-[Iteration 6] [TOOL]: ToolResult => Simulation timescale is 1ns
-[Iteration 7] [TOOL]: ToolCall => list_vcd_signals with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'pattern': '*', 'store_scopes': True}
-[Iteration 7] [TOOL]: ToolResult => Simulation Signal list are 
+[Iteration 8] [TOOL]: ToolCall => get_source_snippet with arguments {'file_path': '/home/slim/FaultTrace/simulation/testbench.sv', 'line_number': 120, 'context': 20}
+[Iteration 8] [TOOL]: ToolResult => --- Source: /home/slim/FaultTrace/simulation/testbench.sv (Lines 100 to 140) ---
+        vif.sda_drive_out <= 1'b1;
+        vif.scl_drive_out <= 1'b1;
+        repeat(quarter_period) @(posedge vif.clk);
+        
+        vif.sda_drive_out <= 1'b0; // SDA falls
+        repeat(quarter_period) @(posedge vif.clk);
+        
+        vif.scl_drive_out <= 1'b0; // SCL falls
+    endtask
 
-[Iteration 8] [TOOL]: ToolCall => list_vcd_signals with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'pattern': 'top*', 'store_scopes': True}
-[Iteration 8] [TOOL]: ToolResult => Simulation Signal list are 
+    task send_stop();
+        // Stop: SDA rises while SCL is High
+        vif.sda_drive_out <= 1'b0;
+        repeat(quarter_period) @(posedge vif.clk);
+        
+        vif.scl_drive_out <= 1'b1; // SCL Rises
+        repeat(quarter_period) @(posedge vif.clk);
+        
+        vif.sda_drive_out <= 1'b1; // SDA Rises
+        repeat(quarter_period) @(posedge vif.clk);
+    endtask
 
-[Iteration 9] [TOOL]: ToolCall => vcd_get_simulation_time with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd'}
-[Iteration 9] [TOOL]: ToolResult => Simulation time is 1.1845e-05
-[Iteration 10] [TOOL]: ToolCall => vcd_get_signal_values_in_timeframe with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_name': 'top.intf.sda', 'start': 0, 'end': 20000}
-[Iteration 10] [TOOL]: ToolResult => Signal top.intf.sda values in the timewindow 0-20000 are : [(0.0, '1'), (0.0, '1'), (45.0, '0'), (95.0, '1'), (295.0, '0'), (495.0, '1'), (695.0, '0'), (1695.0, '1'), (2045.0, '0'), (2445.0, '1'), (2645.0, '0'), (2845.0, '1'), (3045.0, '0'), (3245.0, '1'), (3595.0, '0'), (3695.0, '1'), (3995.0, '0'), (4045.0, '1'), (4245.0, '0'), (4445.0, '1'), (4645.0, '0'), (5645.0, '1'), (5795.0, '0'), (6795.0, '1'), (6995.0, '0'), (7195.0, '1'), (7545.0, '0'), (7645.0, '1'), (7945.0, '0'), (7995.0, '1'), (8195.0, '0'), (8395.0, '1'), (8595.0, '0'), (9595.0, '1'), (9945.0, '0'), (10145.0, '1'), (10345.0, '0'), (10545.0, '1'), (11495.0, '0'), (11595.0, '1')]
-[Iteration 11] [TOOL]: ToolCall => grep with arguments {'regr': 'shift_reg\\[6:0\\] == SLAVE_ADDR', 'path': '/home/slim/FaultTrace/simulation/', 'opts': '-n'}
-[Iteration 11] [TOOL]: ToolResult => Error executing tool grep: grep: /home/slim/FaultTrace/simulation/: Is a directory
-[Iteration 12] [TOOL]: ToolCall => grep with arguments {'regr': 'SLAVE_ADDR', 'path': '/home/slim/FaultTrace/simulation/*', 'opts': '-n'}
-[Iteration 12] [TOOL]: ToolResult => Error executing tool grep: Path does not exist: /home/slim/FaultTrace/simulation/*
-[Iteration 13] [TOOL]: ToolCall => vcd_get_signal_values_in_timeframe with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_name': 'top.intf.scl', 'start': 0, 'end': 20000}
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-Processing request of type CallToolRequest
-[Iteration 13] [TOOL]: ToolResult => Signal top.intf.scl values in the timewindow 0-20000 are : [(0.0, '1'), (0.0, '1'), (95.0, '0'), (145.0, '1'), (245.0, '0'), (345.0, '1'), (445.0, '0'), (545.0, '1'), (645.0, '0'), (745.0, '1'), (845.0, '0'), (945.0, '1'), (1045.0, '0'), (1145.0, '1'), (1245.0, '0'), (1345.0, '1'), (1445.0, '0'), (1545.0, '1'), (1645.0, '0'), (1745.0, '1'), (1845.0, '0'), (1895.0, '1'), (1995.0, '0'), (2095.0, '1'), (2195.0, '0'), (2295.0, '1'), (2395.0, '0'), (2495.0, '1'), (2595.0, '0'), (2695.0, '1'), (2795.0, '0'), (2895.0, '1'), (2995.0, '0'), (3095.0, '1'), (3195.0, '0'), (3295.0, '1'), (3395.0, '0'), (3495.0, '1'), (3595.0, '0'), (3645.0, '1'), (4045.0, '0'), (4095.0, '1'), (4195.0, '0'), (4295.0, '1'), (4395.0, '0'), (4495.0, '1'), (4595.0, '0'), (4695.0, '1'), (4795.0, '0'), (4895.0, '1'), (4995.0, '0'), (5095.0, '1'), (5195.0, '0'), (5295.0, '1'), (5395.0, '0'), (5495.0, '1'), (5595.0, '0'), (5695.0, '1'), (5795.0, '0'), (5845.0, '1'), (5945.0, '0'), (6045.0, '1'), (6145.0, '0'), (6245.0, '1'), (6345.0, '0'), (6445.0, '1'), (6545.0, '0'), (6645.0, '1'), (6745.0, '0'), (6845.0, '1'), (6945.0, '0'), (7045.0, '1'), (7145.0, '0'), (7245.0, '1'), (7345.0, '0'), (7445.0, '1'), (7545.0, '0'), (7595.0, '1'), (7995.0, '0'), (8045.0, '1'), (8145.0, '0'), (8245.0, '1'), (8345.0, '0'), (8445.0, '1'), (8545.0, '0'), (8645.0, '1'), (8745.0, '0'), (8845.0, '1'), (8945.0, '0'), (9045.0, '1'), (9145.0, '0'), (9245.0, '1'), (9345.0, '0'), (9445.0, '1'), (9545.0, '0'), (9645.0, '1'), (9745.0, '0'), (9795.0, '1'), (9895.0, '0'), (9995.0, '1'), (10095.0, '0'), (10195.0, '1'), (10295.0, '0'), (10395.0, '1'), (10495.0, '0'), (10595.0, '1'), (10695.0, '0'), (10795.0, '1'), (10895.0, '0'), (10995.0, '1'), (11095.0, '0'), (11195.0, '1'), (11295.0, '0'), (11395.0, '1'), (11495.0, '0'), (11545.0, '1')]
-[Iteration 14] [TOOL]: ToolCall => vcd_get_signals_aligned_in_window with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_names': ['top.intf.scl', 'top.intf.sda'], 'start': 1600, 'end': 2100}
-[Iteration 14] [TOOL]: ToolResult => Times:	[1600.0, 1645.0, 1695.0, 1745.0, 1845.0, 1895.0, 1995.0, 2045.0, 2095.0]
+    task send_byte(logic [7:0] byte_data);
+        for(int i=7; i>=0; i--) begin
+            // Change data while SCL is low
+            vif.sda_drive_out <= byte_data[i];
+            repeat(quarter_period) @(posedge vif.clk);
+            
+            // Pulse SCL
+            vif.scl_drive_out <= 1'b1;
+            repeat(quarter_period*2) @(posedge vif.clk);
+            vif.scl_drive_out <= 1'b0;
+            repeat(quarter_period) @(posedge vif.clk);
+        end
+    endtask
 
-[Iteration 15] [TOOL]: ToolCall => get_source_snippet with arguments {'file_path': '/home/slim/FaultTrace/simulation/testbench.sv', 'line_number': 130, 'context': 40}
-[Iteration 15] [TOOL]: ToolResult => --- Source: /home/slim/FaultTrace/simulation/testbench.sv (Lines 90 to 170) ---
+    task check_ack(string phase_name);
+        // Master releases SDA (float to High) to read ACK from Slave
+        vif.sda_drive_out <= 1'b1; 
+        
+        repeat(quarter_period) @(posedge vif.clk);
+
+[Iteration 9] [TOOL]: ToolCall => get_source_snippet with arguments {'file_path': '/home/slim/FaultTrace/simulation/testbench.sv', 'line_number': 140, 'context': 120}
+Processing request of type CallToolRequest
+[Iteration 9] [TOOL]: ToolResult => --- Source: /home/slim/FaultTrace/simulation/testbench.sv (Lines 20 to 260) ---
+    // 3. Connect Driver variables to the Bus (Open Drain modeling)
+    // If drive_out is 0, we drive 0. If 1, we drive Z (High impedance).
+    assign scl = (scl_drive_out === 1'b0) ? 1'b0 : 1'bz;
+    assign sda = (sda_drive_out === 1'b0) ? 1'b0 : 1'bz;
+
+endinterface
+
+// ----------------------------------------------------------------------------
+// 2. Sequence Item
+// ----------------------------------------------------------------------------
+class i2c_item extends uvm_sequence_item;
+    rand logic [6:0] addr;
+    rand logic [7:0] data;
+    rand logic       rw; // 0 = Write, 1 = Read
+
+    `uvm_object_utils_begin(i2c_item)
+        `uvm_field_int(addr, UVM_ALL_ON)
+        `uvm_field_int(data, UVM_ALL_ON)
+        `uvm_field_int(rw,   UVM_ALL_ON)
+    `uvm_object_utils_end
+
+    constraint addr_c { addr == 7'h50; }
+    constraint rw_c   { rw == 0; } // Write only
+
+    function new(string name = "i2c_item");
+        super.new(name);
+    endfunction
+endclass
+
+// ----------------------------------------------------------------------------
+// 3. Driver (Acts as I2C Master)
+// ----------------------------------------------------------------------------
+class i2c_driver extends uvm_driver #(i2c_item);
+    `uvm_component_utils(i2c_driver)
+
+    virtual i2c_if vif;
+    
+    // I2C Timing variables (cycles)
+    int quarter_period = 5; 
+
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        if(!uvm_config_db#(virtual i2c_if)::get(this, "", "vif", vif))
+            `uvm_fatal("DRV", "Could not get interface")
+    endfunction
+
+    task run_phase(uvm_phase phase);
+        // Initialize lines to Float (High)
+        vif.scl_drive_out <= 1'b1;
+        vif.sda_drive_out <= 1'b1; 
+
+        forever begin
+            seq_item_port.get_next_item(req);
+            drive_transaction(req);
+            seq_item_port.item_done();
+        end
+    endtask
+
+    // ---------------------------------------
+    // Bit-Banging Logic
+    // ---------------------------------------
+    task drive_transaction(i2c_item item);
+        `uvm_info("DRV", $sformatf("Starting Write: Addr=%0h Data=%0h", item.addr, item.data), UVM_LOW)
+
+        send_start();
+        send_byte({item.addr, item.rw});
         check_ack("Address");
         send_byte(item.data);
         check_ack("Data");
@@ -575,13 +639,352 @@ class i2c_agent extends uvm_agent;
     endfunction
 
     function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        driver = i2c_driver::type_id::create("driver", this);
+        sequencer = uvm_sequencer#(i2c_item)::type_id::create("sequencer", this);
+    endfunction
 
-[Iteration 16] [TOOL]: ToolCall => vcd_get_signals_values_at_timestamp with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_names': ['top.intf.scl', 'top.intf.sda'], 'timestamp': 1795}
-[Iteration 16] [TOOL]: ToolResult => The Values of the Signals list ValidatorIterator(index=2, schema=Some(Str(StrValidator { strict: false, coerce_numbers_to_str: false }))) at timestamp 1795 are : {'top.intf.scl': '1', 'top.intf.sda': '1'}
-[Iteration 17] [TOOL]: ToolCall => cat with arguments {'path': '/home/slim/FaultTrace/simulation/design.sv', 'args': '-n'}
+    function void connect_phase(uvm_phase phase);
+        driver.seq_item_port.connect(sequencer.seq_item_export);
+    endfunction
+endclass
+
+class i2c_env extends uvm_env;
+    `uvm_component_utils(i2c_env)
+    i2c_agent agent;
+
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        agent = i2c_agent::type_id::create("agent", this);
+    endfunction
+endclass
+
+// ----------------------------------------------------------------------------
+// 5. Sequence (3 Transactions)
+// ----------------------------------------------------------------------------
+class i2c_3_writes_seq extends uvm_sequence #(i2c_item);
+    `uvm_object_utils(i2c_3_writes_seq)
+
+    function new(string name = "i2c_3_writes_seq");
+        super.new(name);
+    endfunction
+
+    task body();
+        i2c_item item;
+        repeat(3) begin
+            item = i2c_item::type_id::create("item");
+            start_item(item);
+            if(!item.randomize()) `uvm_error("SEQ", "Randomization Failed")
+            finish_item(item);
+        end
+    endtask
+endclass
+
+// ----------------------------------------------------------------------------
+// 6. Test
+// ----------------------------------------------------------------------------
+class i2c_test extends uvm_test;
+    `uvm_component_utils(i2c_test)
+    i2c_env env;
+
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        env = i2c_env::type_id::create("env", this);
+    endfunction
+
+    task run_phase(uvm_phase phase);
+        i2c_3_writes_seq seq;
+        phase.raise_objection(this);
+        seq = i2c_3_writes_seq::type_id::create("seq");
+        seq.start(env.agent.sequencer);
+        phase.drop_objection(this);
+    endtask
+endclass
+
+// ----------------------------------------------------------------------------
+// 7. Top Module
+// ----------------------------------------------------------------------------
+module top;
+    
+    logic clk;
+    logic rst_n;
+
+    // Clock Generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+
+    // Reset Generation
+    initial begin
+        rst_n = 0;
+        #20 rst_n = 1;
+    end
+
+
+[Iteration 10] [TOOL]: ToolCall => get_source_snippet with arguments {'file_path': '/home/slim/FaultTrace/simulation/testbench.sv', 'line_number': 260, 'context': 200}
 Processing request of type CallToolRequest
 Processing request of type CallToolRequest
-[Iteration 17] [TOOL]: ToolResult =>  PATH 		: /home/slim/FaultTrace/simulation/design.sv
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+[Iteration 10] [TOOL]: ToolResult => --- Source: /home/slim/FaultTrace/simulation/testbench.sv (Lines 60 to 286) ---
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        if(!uvm_config_db#(virtual i2c_if)::get(this, "", "vif", vif))
+            `uvm_fatal("DRV", "Could not get interface")
+    endfunction
+
+    task run_phase(uvm_phase phase);
+        // Initialize lines to Float (High)
+        vif.scl_drive_out <= 1'b1;
+        vif.sda_drive_out <= 1'b1; 
+
+        forever begin
+            seq_item_port.get_next_item(req);
+            drive_transaction(req);
+            seq_item_port.item_done();
+        end
+    endtask
+
+    // ---------------------------------------
+    // Bit-Banging Logic
+    // ---------------------------------------
+    task drive_transaction(i2c_item item);
+        `uvm_info("DRV", $sformatf("Starting Write: Addr=%0h Data=%0h", item.addr, item.data), UVM_LOW)
+
+        send_start();
+        send_byte({item.addr, item.rw});
+        check_ack("Address");
+        send_byte(item.data);
+        check_ack("Data");
+        send_stop();
+        
+        repeat(20) @(posedge vif.clk);
+    endtask
+
+    task send_start();
+        // Start: SDA falls while SCL is High
+        vif.sda_drive_out <= 1'b1;
+        vif.scl_drive_out <= 1'b1;
+        repeat(quarter_period) @(posedge vif.clk);
+        
+        vif.sda_drive_out <= 1'b0; // SDA falls
+        repeat(quarter_period) @(posedge vif.clk);
+        
+        vif.scl_drive_out <= 1'b0; // SCL falls
+    endtask
+
+    task send_stop();
+        // Stop: SDA rises while SCL is High
+        vif.sda_drive_out <= 1'b0;
+        repeat(quarter_period) @(posedge vif.clk);
+        
+        vif.scl_drive_out <= 1'b1; // SCL Rises
+        repeat(quarter_period) @(posedge vif.clk);
+        
+        vif.sda_drive_out <= 1'b1; // SDA Rises
+        repeat(quarter_period) @(posedge vif.clk);
+    endtask
+
+    task send_byte(logic [7:0] byte_data);
+        for(int i=7; i>=0; i--) begin
+            // Change data while SCL is low
+            vif.sda_drive_out <= byte_data[i];
+            repeat(quarter_period) @(posedge vif.clk);
+            
+            // Pulse SCL
+            vif.scl_drive_out <= 1'b1;
+            repeat(quarter_period*2) @(posedge vif.clk);
+            vif.scl_drive_out <= 1'b0;
+            repeat(quarter_period) @(posedge vif.clk);
+        end
+    endtask
+
+    task check_ack(string phase_name);
+        // Master releases SDA (float to High) to read ACK from Slave
+        vif.sda_drive_out <= 1'b1; 
+        
+        repeat(quarter_period) @(posedge vif.clk);
+        vif.scl_drive_out <= 1'b1; 
+        
+        // Sample SDA
+        repeat(quarter_period) @(posedge vif.clk);
+        if(vif.sda === 1'b0) begin
+            `uvm_info("DRV", $sformatf("ACK received during %s phase", phase_name), UVM_LOW)
+        end else begin
+            `uvm_error("DRV", $sformatf("NACK (No ACK) received during %s phase", phase_name))
+        end
+        repeat(quarter_period) @(posedge vif.clk);
+
+        vif.scl_drive_out <= 1'b0;
+    endtask
+
+endclass
+
+// ----------------------------------------------------------------------------
+// 4. Agent & Env
+// ----------------------------------------------------------------------------
+class i2c_agent extends uvm_agent;
+    `uvm_component_utils(i2c_agent)
+    
+    i2c_driver    driver;
+    uvm_sequencer #(i2c_item) sequencer;
+
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        driver = i2c_driver::type_id::create("driver", this);
+        sequencer = uvm_sequencer#(i2c_item)::type_id::create("sequencer", this);
+    endfunction
+
+    function void connect_phase(uvm_phase phase);
+        driver.seq_item_port.connect(sequencer.seq_item_export);
+    endfunction
+endclass
+
+class i2c_env extends uvm_env;
+    `uvm_component_utils(i2c_env)
+    i2c_agent agent;
+
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        agent = i2c_agent::type_id::create("agent", this);
+    endfunction
+endclass
+
+// ----------------------------------------------------------------------------
+// 5. Sequence (3 Transactions)
+// ----------------------------------------------------------------------------
+class i2c_3_writes_seq extends uvm_sequence #(i2c_item);
+    `uvm_object_utils(i2c_3_writes_seq)
+
+    function new(string name = "i2c_3_writes_seq");
+        super.new(name);
+    endfunction
+
+    task body();
+        i2c_item item;
+        repeat(3) begin
+            item = i2c_item::type_id::create("item");
+            start_item(item);
+            if(!item.randomize()) `uvm_error("SEQ", "Randomization Failed")
+            finish_item(item);
+        end
+    endtask
+endclass
+
+// ----------------------------------------------------------------------------
+// 6. Test
+// ----------------------------------------------------------------------------
+class i2c_test extends uvm_test;
+    `uvm_component_utils(i2c_test)
+    i2c_env env;
+
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        env = i2c_env::type_id::create("env", this);
+    endfunction
+
+    task run_phase(uvm_phase phase);
+        i2c_3_writes_seq seq;
+        phase.raise_objection(this);
+        seq = i2c_3_writes_seq::type_id::create("seq");
+        seq.start(env.agent.sequencer);
+        phase.drop_objection(this);
+    endtask
+endclass
+
+// ----------------------------------------------------------------------------
+// 7. Top Module
+// ----------------------------------------------------------------------------
+module top;
+    
+    logic clk;
+    logic rst_n;
+
+    // Clock Generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+
+    // Reset Generation
+    initial begin
+        rst_n = 0;
+        #20 rst_n = 1;
+    end
+
+    // Interface
+    i2c_if intf(clk, rst_n);
+
+    // Pull-up resistors
+    // Now valid because intf.scl and intf.sda are wires
+    pullup(intf.sda);
+    pullup(intf.scl);
+
+    // DUT Instantiation
+    i2c_slave_dut dut (
+        .clk(clk),
+        .rst_n(rst_n),
+        .scl(intf.scl), 
+        .sda(intf.sda)  
+    );
+
+    // UVM Start
+    initial begin
+      $dumpfile("sim.vcd");
+      //$dumpvars(0);
+      $dumpvars(0, top);
+        uvm_config_db#(virtual i2c_if)::set(null, "*", "vif", intf);
+        run_test("i2c_test");
+    end
+
+endmodule
+
+[Iteration 11] [TOOL]: ToolCall => vcd_get_timescale_str with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd'}
+[Iteration 11] [TOOL]: ToolResult => Simulation timescale is 1ns
+[Iteration 12] [TOOL]: ToolCall => list_vcd_signals with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'pattern': '*', 'store_scopes': True}
+[Iteration 12] [TOOL]: ToolResult => Simulation Signal list are 
+
+[Iteration 13] [TOOL]: ToolCall => vcd_get_simulation_time with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'store_scopes': False}
+[Iteration 13] [TOOL]: ToolResult => Simulation time is 1.1845e-05
+[Iteration 14] [TOOL]: ToolCall => vcd_get_signal_values_in_timeframe with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_name': 'top.intf.sda', 'start': 0, 'end': 11845}
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+Processing request of type CallToolRequest
+[Iteration 14] [TOOL]: ToolResult => Signal top.intf.sda values in the timewindow 0-11845 are : [(0.0, '1'), (0.0, '1'), (45.0, '0'), (95.0, '1'), (295.0, '0'), (495.0, '1'), (695.0, '0'), (1695.0, '1'), (2045.0, '0'), (2445.0, '1'), (2645.0, '0'), (2845.0, '1'), (3045.0, '0'), (3245.0, '1'), (3595.0, '0'), (3695.0, '1'), (3995.0, '0'), (4045.0, '1'), (4245.0, '0'), (4445.0, '1'), (4645.0, '0'), (5645.0, '1'), (5795.0, '0'), (6795.0, '1'), (6995.0, '0'), (7195.0, '1'), (7545.0, '0'), (7645.0, '1'), (7945.0, '0'), (7995.0, '1'), (8195.0, '0'), (8395.0, '1'), (8595.0, '0'), (9595.0, '1'), (9945.0, '0'), (10145.0, '1'), (10345.0, '0'), (10545.0, '1'), (11495.0, '0'), (11595.0, '1')]
+[Iteration 15] [TOOL]: ToolCall => vcd_get_signal_values_in_timeframe with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_name': 'top.intf.scl', 'start': 0, 'end': 11845}
+[Iteration 15] [TOOL]: ToolResult => Signal top.intf.scl values in the timewindow 0-11845 are : [(0.0, '1'), (0.0, '1'), (95.0, '0'), (145.0, '1'), (245.0, '0'), (345.0, '1'), (445.0, '0'), (545.0, '1'), (645.0, '0'), (745.0, '1'), (845.0, '0'), (945.0, '1'), (1045.0, '0'), (1145.0, '1'), (1245.0, '0'), (1345.0, '1'), (1445.0, '0'), (1545.0, '1'), (1645.0, '0'), (1745.0, '1'), (1845.0, '0'), (1895.0, '1'), (1995.0, '0'), (2095.0, '1'), (2195.0, '0'), (2295.0, '1'), (2395.0, '0'), (2495.0, '1'), (2595.0, '0'), (2695.0, '1'), (2795.0, '0'), (2895.0, '1'), (2995.0, '0'), (3095.0, '1'), (3195.0, '0'), (3295.0, '1'), (3395.0, '0'), (3495.0, '1'), (3595.0, '0'), (3645.0, '1'), (4045.0, '0'), (4095.0, '1'), (4195.0, '0'), (4295.0, '1'), (4395.0, '0'), (4495.0, '1'), (4595.0, '0'), (4695.0, '1'), (4795.0, '0'), (4895.0, '1'), (4995.0, '0'), (5095.0, '1'), (5195.0, '0'), (5295.0, '1'), (5395.0, '0'), (5495.0, '1'), (5595.0, '0'), (5695.0, '1'), (5795.0, '0'), (5845.0, '1'), (5945.0, '0'), (6045.0, '1'), (6145.0, '0'), (6245.0, '1'), (6345.0, '0'), (6445.0, '1'), (6545.0, '0'), (6645.0, '1'), (6745.0, '0'), (6845.0, '1'), (6945.0, '0'), (7045.0, '1'), (7145.0, '0'), (7245.0, '1'), (7345.0, '0'), (7445.0, '1'), (7545.0, '0'), (7595.0, '1'), (7995.0, '0'), (8045.0, '1'), (8145.0, '0'), (8245.0, '1'), (8345.0, '0'), (8445.0, '1'), (8545.0, '0'), (8645.0, '1'), (8745.0, '0'), (8845.0, '1'), (8945.0, '0'), (9045.0, '1'), (9145.0, '0'), (9245.0, '1'), (9345.0, '0'), (9445.0, '1'), (9545.0, '0'), (9645.0, '1'), (9745.0, '0'), (9795.0, '1'), (9895.0, '0'), (9995.0, '1'), (10095.0, '0'), (10195.0, '1'), (10295.0, '0'), (10395.0, '1'), (10495.0, '0'), (10595.0, '1'), (10695.0, '0'), (10795.0, '1'), (10895.0, '0'), (10995.0, '1'), (11095.0, '0'), (11195.0, '1'), (11295.0, '0'), (11395.0, '1'), (11495.0, '0'), (11545.0, '1')]
+[Iteration 16] [TOOL]: ToolCall => vcd_get_signal_value_at_timestamp with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_name': 'top.intf.sda', 'timestamp': 1795}
+[Iteration 16] [TOOL]: ToolResult => Signal top.intf.sda value at timestamp 1795 is 1
+[Iteration 17] [TOOL]: ToolCall => vcd_get_signals_values_at_timestamp with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_names': ['top.intf.sda', 'top.intf.scl'], 'timestamp': 1795}
+[Iteration 17] [TOOL]: ToolResult => The Values of the Signals list ValidatorIterator(index=2, schema=Some(Str(StrValidator { strict: false, coerce_numbers_to_str: false }))) at timestamp 1795 are : {'top.intf.sda': '1', 'top.intf.scl': '1'}
+[Iteration 18] [TOOL]: ToolCall => cat with arguments {'path': '/home/slim/FaultTrace/simulation/design.sv', 'args': '-n'}
+[Iteration 18] [TOOL]: ToolResult =>  PATH 		: /home/slim/FaultTrace/simulation/design.sv
  COMMAND 	: cat -n /home/slim/FaultTrace/simulation/design.sv
  OUTPUT 	: 
      1	// i2c_slave_dut.sv
@@ -716,99 +1119,88 @@ Processing request of type CallToolRequest
    130	
    131	endmodule
 
-[Iteration 18] [TOOL]: ToolCall => vcd_get_signals_values_at_timestamp with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_names': ['top.intf.scl', 'top.intf.sda'], 'timestamp': 1695}
-[Iteration 18] [TOOL]: ToolResult => The Values of the Signals list ValidatorIterator(index=2, schema=Some(Str(StrValidator { strict: false, coerce_numbers_to_str: false }))) at timestamp 1695 are : {'top.intf.scl': '0', 'top.intf.sda': '1'}
-[Iteration 19] [TOOL]: ToolCall => vcd_get_signals_aligned_in_window with arguments {'path': '/home/slim/FaultTrace/simulation/sim.vcd', 'signal_names': ['top.intf.scl', 'top.intf.sda'], 'start': 1600, 'end': 2050}
-[Iteration 19] [TOOL]: ToolResult => Times:	[1600.0, 1645.0, 1695.0, 1745.0, 1845.0, 1895.0, 1995.0, 2045.0]
 
+[Iteration 19] [AGENT]: Summary
+- Found UVM errors in /home/slim/FaultTrace/simulation/sim.log: repeated "NACK (No ACK) received during Address phase" (first at time 1795) and similar NACKs for Data phase.
+- Waveform evidence (sim.vcd) at the first error time (1795) shows master SCL=1 and SDA=1 (i.e., SDA not pulled low by the slave), so the driver correctly detected a NACK.
+- Root cause: DUT address-compare is using the wrong bit indices when comparing the received 8-bit value to the 7-bit slave address (off-by-one). This causes the slave not to assert ACK for the master's address — a DUT bug.
+- Fix: in design.sv change the compare from shift_reg[6:0] to shift_reg[7:1] so the DUT compares the top 7 bits (address) and ignores the R/W bit.
 
-[Iteration 20] [AGENT]: Summary
-- UVM error: "NACK (No ACK) received during Address phase" at sim time 1795 (from /home/slim/FaultTrace/simulation/sim.log).
-- Root cause: DUT (i2c_slave_dut) compares the wrong bits of the received byte when matching the 7-bit address — an off-by-one indexing bug. Because the DUT compares shift_reg[6:0] (which includes the R/W bit) to SLAVE_ADDR, the address never matches and the slave never drives ACK → master reports NACK.
-- This is a DUT/design bug (not a testbench timing/connectivity issue). Evidence from sim log + VCD supports this.
-
-Evidence (logs + waveforms)
-- sim.log (first UVM error):
-  - UVM_INFO @ 0: Running test i2c_test...
-  - UVM_INFO testbench.sv(84) @ 0: uvm_test_top.env.agent.driver [DRV] Starting Write: Addr=50 Data=95
+Evidence (logs / waveforms)
+- UVM error entries in sim.log (examples):
   - UVM_ERROR testbench.sv(146) @ 1795: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase
+  - Additional NACKs at @3545 (Data phase), @5745, @7495, etc.
+  (All from /home/slim/FaultTrace/simulation/sim.log)
 
-- VCD (timescale 1ns). At the ACK-sample time (1795 ns) the bus values show:
-  - top.intf.scl = '1'
-  - top.intf.sda = '1'
-  => slave did not pull SDA low for ACK when master sampled it.
+- VCD values at the first reported error time:
+  - sim.vcd sampling at timestamp 1795:
+    - top.intf.scl = '1'
+    - top.intf.sda = '1'
+  - This shows SDA was high while SCL was high at the ACK sample time (master expected 0 for ACK).
 
-Files inspected
-- Testbench/driver: /home/slim/FaultTrace/simulation/testbench.sv
-  - The error originates in check_ack (uvm_error is at testbench.sv line ~146).
-  - Driver correctly sends {addr, rw} and releases SDA for ACK sampling.
-- DUT: /home/slim/FaultTrace/simulation/design.sv
-  - Relevant code (with line numbers from the file):
-    - Line 76..83 (context):
-      76   MATCH_ADDR: begin
-      77       if (scl_rising) begin
-      78           shift_reg <= {shift_reg[6:0], sda};
-      79           if (bit_cnt == 7) begin
-      80               // 7 bits addr + 1 bit R/W.
-      81               // We check top 7 bits against SLAVE_ADDR
-      82               if (shift_reg[6:0] == SLAVE_ADDR) begin
-      83                   state <= ACK_ADDR;
-
-Why this is wrong
-- Transmitted byte bits (MSB first) are: b7 b6 b5 b4 b3 b2 b1 b0 = {addr[6:0], rw}
-  - b7..b1 = address bits (addr[6:0]) — these should be compared to SLAVE_ADDR.
-  - b0 = R/W
-- After 8 samples via shift_reg <= {shift_reg[6:0], sda}; the received byte will be in shift_reg[7:0] with:
-  - shift_reg[7] = b7 (addr[6])
-  - ...
-  - shift_reg[1] = b1 (addr[0])
-  - shift_reg[0] = b0 (rw)
-- The DUT currently compares shift_reg[6:0] (b6..b0): that is addr[5:0] plus the R/W bit — wrong alignment. The correct comparison is shift_reg[7:1] == SLAVE_ADDR.
-
-Concrete fix
+Source inspection that shows the bug
 - File: /home/slim/FaultTrace/simulation/design.sv
-- Replace the comparison at line ~82:
+- Relevant code (context, numbered lines from the file):
+  - Lines 76–88 (from design.sv):
+    76:    MATCH_ADDR: begin
+    77:        if (scl_rising) begin
+    78:            shift_reg <= {shift_reg[6:0], sda};
+    79:            if (bit_cnt == 7) begin
+    80:                // 7 bits addr + 1 bit R/W. 
+    81:                // We check top 7 bits against SLAVE_ADDR
+    82:                if (shift_reg[6:0] == SLAVE_ADDR) begin
+    83:                    state <= ACK_ADDR;
+    84:                end else begin
+    85:                    state <= IDLE; // Not our address
+    86:                end
+    87:                bit_cnt <= 0;
+    88:            end else begin
 
-Original (line ~82):
-  if (shift_reg[6:0] == SLAVE_ADDR) begin
+- Problem: after 8 shifts, shift_reg (8 bits) holds [7:0] with the newest sampled bit in bit 0 (LSB). The 7-bit address lives in bits [7:1] (MSB..bit1) and the R/W bit is bit0. The code incorrectly compares shift_reg[6:0] to SLAVE_ADDR (this includes the R/W bit and omits the MSB), so it compares the wrong 7 bits.
 
-Change to:
-  if (shift_reg[7:1] == SLAVE_ADDR) begin
+Precise fix (file path + line)
+- File: /home/slim/FaultTrace/simulation/design.sv
+- Change at around line 82:
+  - Replace:
+      if (shift_reg[6:0] == SLAVE_ADDR) begin
+    - With:
+      if (shift_reg[7:1] == SLAVE_ADDR) begin
 
-Patch snippet with context (apply to design.sv lines ~76-86):
-  MATCH_ADDR: begin
-      if (scl_rising) begin
-          shift_reg <= {shift_reg[6:0], sda};
-          if (bit_cnt == 7) begin
-              // 7 bits addr + 1 bit R/W.
-              // Check the MSB..LSB-1 (bits 7 downto 1) for the 7-bit address
-              if (shift_reg[7:1] == SLAVE_ADDR) begin
-                  state <= ACK_ADDR;
-              end else begin
-                  state <= IDLE; // Not our address
-              end
-              bit_cnt <= 0;
-          end else begin
-              bit_cnt <= bit_cnt + 1;
-          end
-      end
-  end
+- Full corrected snippet (same location for clarity):
+  76:    MATCH_ADDR: begin
+  77:        if (scl_rising) begin
+  78:            shift_reg <= {shift_reg[6:0], sda};
+  79:            if (bit_cnt == 7) begin
+  80:                // 7 bits addr + 1 bit R/W. 
+  81:                // Compare top 7 bits (bits 7:1 of the received byte) against SLAVE_ADDR
+  82:                if (shift_reg[7:1] == SLAVE_ADDR) begin
+  83:                    state <= ACK_ADDR;
+  84:                end else begin
+  85:                    state <= IDLE; // Not our address
+  86:                end
+  87:                bit_cnt <= 0;
+  88:            end else begin
 
-Why this fix works
-- shift_reg[7:1] contains the transmitted address bits (b7..b1) — exactly the 7-bit slave address — so the DUT will correctly detect its address and transition to ACK_ADDR state and drive SDA low during the ACK bit. That will make SDA be '0' when the master samples and the UVM_ERROR should go away.
+Why this is DUT (not testbench) related
+- The driver in the UVM testbench correctly releases SDA and samples SDA while SCL=1 (as seen in testbench.sv check_ack() and in waveforms). The UVM messages are correct: the master is seeing SDA high at ACK sample time.
+- The DUT's MATCH_ADDR logic is comparing the wrong bits and therefore never entering ACK state for valid address, so DUT fails to drive SDA low for ACK. This is a design bug in the DUT (design.sv), not the testbench driver.
 
-Extra suggestions and verification steps
-1. Apply the change in /home/slim/FaultTrace/simulation/design.sv at the location shown (line ~82).
-2. Re-run the simulation (same run command).
-3. Check sim.log: you should see UVM_INFO "ACK received during Address phase" instead of UVM_ERROR. The earlier UVM_INFO lines from driver show the transaction; the ACK info will confirm the slave responded.
-4. Optionally, inspect sim.vcd at the ACK sampling time (e.g., around previous error time ~1795 ns) to verify top.intf.sda is driven '0' while top.intf.scl is '1' during the ACK bit.
+Optional additional recommendations
+- After the primary fix, re-run the simulation and inspect sim.log and sim.vcd:
+  - Verify at the ACK sampling times SDA is '0' (driven low) when SCL is '1' for the address ACK.
+  - Check subsequent data ACK behavior too.
+- Consider adding an assertion or a debug signal in the DUT to expose the FSM state in the VCD (makes debugging faster). Example: export a state signal or one-hot flags to top-level (temporary for debug).
+- (Small improvement) In the DUT, consider using nonblocking assignments consistently and ensure edge detection (scl_rising/scl_falling) logic matches the intended timing, but this is secondary — main blocker is the bit-indexing bug.
 
-Final classification
-- Root cause: DUT design bug (off-by-one bit-index error in address matching), file /home/slim/FaultTrace/simulation/design.sv line ~82.
-- Not a testbench bug. The driver behavior and timing (as observed in the VCD) are consistent with the expected master behavior; the slave simply failed to match the address and therefore did not assert ACK.
+Confidence and next steps
+- Confidence: high — the off-by-one bit-indexing mismatch is an obvious bug and directly explains why SDA stays high during ACK sample.
+- Next steps:
+  1. Edit /home/slim/FaultTrace/simulation/design.sv and apply the change at the indicated lines.
+  2. Re-run the simulation.
+  3. Check sim.log for disappearance of the Address-phase NACKs and inspect sim.vcd at former error timestamps to confirm SDA pulled low during ACK.
 
-I have double-checked the testbench driver logic, VCD values at the ACK time (scl=1, sda=1), and the DUT code. The described change is the minimal correct fix. After you run the simulation with that patch, report sim.log and I will re-check the waveforms if anything unexpected remains.
+If you want, I can (A) produce a one-line patch you can apply (diff), and (B) re-run the log/waveform checks after you apply the fix (if you provide new sim.log and sim.vcd).
 
-[INFO] : Agent completed the task in 20 steps.
+[INFO] : Agent completed the task in 19 steps.
 
-[USER]: [INFO] : Shutting down agent. Goodbye!
+[USER]: 
