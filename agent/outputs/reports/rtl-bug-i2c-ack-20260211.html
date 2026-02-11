@@ -1,139 +1,150 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rtl Bug I2C Ack 20260211</title>
+  <meta charset="utf-8">
+  <title>I2C ACK Failure Analysis</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-body{font-family:system-ui,Segoe UI,Helvetica,Arial;margin:20px;line-height:1.45} pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto} h1{font-size:20px} h2{font-size:16px;margin-top:16px}
-</style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height:1.55; margin:32px 24px; background:#fafbfc; color:#1f2937 }
+    h1,h2,h3 { color:#1f2937; margin-top:0 }
+    .card { background:#ffffff; padding:20px 24px; border-radius:12px; margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.10),0 1px 2px rgba(0,0,0,0.06); border:1px solid #e5e7eb }
+    .subcard { background:#f9fafb; padding:16px; border-radius:10px; margin-top:12px; border:1px solid #e5e7eb }
+    .muted { color:#4b5563 }
+    pre { background:#0f172a; color:#e6eef8; padding:12px; border-radius:8px; overflow:auto }
+    code { font-family: Menlo, Monaco, monospace }
+    .ok { color:#059669; font-weight:600 }
+    .bad { color:#dc2626; font-weight:700 }
+  </style>
 </head>
 <body>
-<h1>RTL Bug Report - I2C ACK Failure (ANALYSIS_ID: i2c-ack-20260211)</h1>
+  <h1>I2C ACK Failure — Root Cause Analysis</h1>
+  <div class="card">
+    <h2>Summary</h2>
+    <p class="muted">Investigated UVM errors in /home/runner/work/FaultTrace/FaultTrace/simulation/sim.log showing repeated NACKs reported by the driver:</p>
+    <ul>
+      <li>First UVM_ERROR: testbench.sv(146) @ 1795: "NACK (No ACK) received during Address phase"</li>
+      <li>Environment: testbench and DUT under /home/runner/work/FaultTrace/FaultTrace/simulation/</li>
+    </ul>
+  </div>
 
-<h2>1) Summary</h2>
-<ul>
-<li>Module: i2c_slave_dut (design.sv)</li>
-<li>Test: i2c_test (testbench.sv)</li>
-<li>Repro command / log: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.log</li>
-<li>Artifacts: design.sv, testbench.sv, sim.vcd, sim.log (all under /home/runner/work/FaultTrace/FaultTrace/simulation/)</li>
-</ul>
+  <div class="card">
+    <h2>Evidence (logs & waveforms)</h2>
+    <div class="subcard">
+      <p><strong>sim.log</strong> (excerpt):</p>
+      <pre><code>UVM_INFO testbench.sv(84) @ 0: uvm_test_top.env.agent.driver [DRV] Starting Write: Addr=50 Data=95
+UVM_ERROR testbench.sv(146) @ 1795: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase</code></pre>
+      <p>VCD sampling at the first error time (1795 ns):</p>
+      <ul>
+        <li>top.intf.sda = 1</li>
+        <li>top.intf.scl = 1</li>
+        <li>top.intf.sda_drive_out = 1 (master released SDA)</li>
+        <li>top.intf.scl_drive_out = 1</li>
+        <li>top.clk = 1</li>
+      </ul>
+      <p class="muted">Master correctly released SDA and sampled while SCL=1, but SDA remained high — slave did not assert ACK.</p>
+    </div>
+  </div>
 
-<h2>2) Symptoms & Evidence</h2>
-<ul>
-<li>UVM errors in sim.log show repeated NACKs during Address and Data phases:
-<pre>/home/runner/work/FaultTrace/FaultTrace/simulation/sim.log
-UVM_ERROR testbench.sv(146) @ 1795: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase
-UVM_ERROR testbench.sv(146) @ 3545: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Data phase
-... (repeated for subsequent transactions)
-</pre>
-</li>
-<li>At timestamp 1795 (first NACK): VCD snapshot shows the master released SDA and SCL is high, but DUT never asserted ACK drive.
-<pre>
-Signals @ 1795 ns:
- top.intf.sda            = 1
- top.intf.sda_drive_out  = 1   (master released SDA)
- top.intf.scl            = 1   (clock)
- top.intf.scl_drive_out  = 1
- top.dut.sda_out_en      = 0   (dut never drove ACK)
- top.dut.sda_d           = 1
- top.dut.scl_d           = 1
-</pre>
-</li>
-<li>Waveform summary (sda, sda_drive_out) shows master toggling lines but DUT.sda_out_en remains 0 across transactions (sim.vcd).</li>
-</ul>
+  <div class="card">
+    <h2>Root cause</h2>
+    <p>Design bug in i2c_slave_dut address-match logic (file: <strong>/home/runner/work/FaultTrace/FaultTrace/simulation/design.sv</strong>).</p>
+    <p class="muted">Details:</p>
+    <ul>
+      <li>Inside MATCH_ADDR the code uses a non-blocking update: <code>shift_reg &lt;= {shift_reg[6:0], sda};</code> and immediately (in the same clock cycle) compares <code>shift_reg[6:0] == SLAVE_ADDR</code> when <code>bit_cnt == 7</code>.</li>
+      <li>Because non-blocking assignments take effect after the current time-step, the comparison reads the old shift_reg (not including the most-recent sampled bit). The code therefore compares the wrong 7-bit field and never matches the master's 7-bit address — the DUT never drives ACK.</li>
+      <li>This is consistent with waveforms: at ACK sampling time SDA remains high (no ACK driven) though the master released the line.</li>
+    </ul>
+  </div>
 
-<h2>3) Root Cause</h2>
-<p>Bug is in the DUT (design.sv). The slave's address-match logic uses a non-blocking update to the shift register (shift_reg <= {shift_reg[6:0], sda}) and immediately compares shift_reg[6:0] in the same clock cycle to decide whether to ACK. Because the new bit is written to shift_reg with a non-blocking assignment, the comparison uses the old contents (off-by-one), so the received 7-bit address is not compared correctly and the DUT never transitions to ACK_ADDR. As a result sda_out_en is never asserted and the master observes NACK.</p>
-
-<p>Specific location (file + lines): /home/runner/work/FaultTrace/FaultTrace/simulation/design.sv. Relevant block around MATCH_ADDR and the comparison at approximately lines 70-92 (shown below):</p>
-<pre>
-// File: /home/runner/work/FaultTrace/FaultTrace/simulation/design.sv
-MATCH_ADDR: begin
-    if (scl_rising) begin
-        shift_reg <= {shift_reg[6:0], sda};
-        if (bit_cnt == 7) begin
-            // 7 bits addr + 1 bit R/W. 
-            // We check top 7 bits against SLAVE_ADDR
-            if (shift_reg[6:0] == SLAVE_ADDR) begin
-                state <= ACK_ADDR;
-            end else begin
-                state <= IDLE; // Not our address
-            end
-            bit_cnt <= 0;
+  <div class="card">
+    <h2>Location in source</h2>
+    <p>File: /home/runner/work/FaultTrace/FaultTrace/simulation/design.sv</p>
+    <p>Problem block starts at approximately line 68 (MATCH_ADDR case). Current code around the check:</p>
+    <div class="subcard">
+      <pre><code>// design.sv around line ~68
+if (scl_rising) begin
+    shift_reg <= {shift_reg[6:0], sda};
+    if (bit_cnt == 7) begin
+        // 7 bits addr + 1 bit R/W.
+        // We check top 7 bits against SLAVE_ADDR
+        if (shift_reg[6:0] == SLAVE_ADDR) begin
+            state <= ACK_ADDR;
         end else begin
-            bit_cnt <= bit_cnt + 1;
+            state <= IDLE; // Not our address
         end
+        bit_cnt <= 0;
+    end else begin
+        bit_cnt <= bit_cnt + 1;
     end
-end
-</pre>
+end</code></pre>
+    </div>
+  </div>
 
-<p>Two specific issues combined: (A) incorrect bits used for address compare (should examine the full byte and extract bits [7:1] for the 7-bit address), and (B) using non-blocking assignment to update shift_reg then reading it in the same cycle prevents the new bit from being visible for the comparison.</p>
+  <div class="card">
+    <h2>Fix</h2>
+    <p class="muted">Make the comparison use the just-sampled byte (including the current sda) instead of reading the pre-update shift_reg. Two practical fixes are shown; I recommend option A.</p>
 
-<h2>4) Fix</h2>
-<p>Change the MATCH_ADDR handling to compute the next_shift (blocking or temporary variable) that includes the current sampled SDA, then compare next_shift[7:1] to SLAVE_ADDR. Update shift_reg non-blocking from next_shift for correct sequencing.</p>
+    <h3>Option A — Compute <code>next_shift</code> and compare its bits (recommended)</h3>
+    <p>Change code in <strong>/home/runner/work/FaultTrace/FaultTrace/simulation/design.sv</strong> in the MATCH_ADDR case (around line 68). Replace the block shown above with:</p>
+    <div class="subcard">
+      <pre><code>// Replace MATCH_ADDR sampling block (design.sv lines ~68-86)
+if (scl_rising) begin
+    // Compute next shift register value (blocking local variable)
+    logic [7:0] next_shift;
+    next_shift = {shift_reg[6:0], sda};
 
-<p>Suggested code change (apply in /home/runner/work/FaultTrace/FaultTrace/simulation/design.sv, replace the MATCH_ADDR section). The patch below shows the minimal, deterministic fix (use of a temporary next_shift):</p>
-<pre>
---- design.sv (original around MATCH_ADDR)
-    if (scl_rising) begin
-        shift_reg <= {shift_reg[6:0], sda};
-        if (bit_cnt == 7) begin
-            if (shift_reg[6:0] == SLAVE_ADDR) begin
-                state <= ACK_ADDR;
-            end else begin
-                state <= IDLE;
-            end
-            bit_cnt <= 0;
+    if (bit_cnt == 7) begin
+        // Address is in bits [7:1] of the sampled byte; bit 0 is R/W
+        if (next_shift[7:1] == SLAVE_ADDR) begin
+            state <= ACK_ADDR;
         end else begin
-            bit_cnt <= bit_cnt + 1;
+            state <= IDLE; // Not our address
         end
+        shift_reg <= next_shift; // store for later use
+        bit_cnt <= 0;
+    end else begin
+        shift_reg <= next_shift;
+        bit_cnt <= bit_cnt + 1;
     end
+end</code></pre>
+    </div>
+    <p class="muted">This fixes the non-blocking/ordering issue by building the sampled byte and testing the correct 7 bits immediately.</p>
 
---- design.sv (fixed)
-    if (scl_rising) begin
-        logic [7:0] next_shift; // add a temporary
-        next_shift = {shift_reg[6:0], sda}; // blocking = immediate view including current sda
+    <h3>Option B — Delay the comparison to next clock edge</h3>
+    <p>Alternatively, update shift_reg as done today, but only perform the address comparison on the next clock cycle (i.e., transition to a small sub-state after the 8th sample). This is more invasive and not required here.</p>
+  </div>
 
-        if (bit_cnt == 7) begin
-            // Compare bits [7:1] (MSB first transmission) to 7-bit SLAVE_ADDR
-            if (next_shift[7:1] == SLAVE_ADDR) begin
-                state <= ACK_ADDR;
-            end else begin
-                state <= IDLE; // Not our address
-            end
-            shift_reg <= next_shift; // update registered shift_reg
-            bit_cnt <= 0;
-        end else begin
-            shift_reg <= next_shift;
-            bit_cnt <= bit_cnt + 1;
-        end
-    end
-</pre>
+  <div class="card">
+    <h2>Why this is a DUT bug (not testbench)</h2>
+    <ul>
+      <li>The testbench driver releases SDA and samples at the expected time (VCD shows top.intf.sda_drive_out = 1 and top.intf.scl = 1 at sampling).</li>
+      <li>The DUT failed to assert ACK even though the master performed the correct sequence. The incorrect comparison in design.sv prevents address recognition.</li>
+    </ul>
+  </div>
 
-<p>Patch location: file /home/runner/work/FaultTrace/FaultTrace/simulation/design.sv, inside the always block around line ~70-92 (the MATCH_ADDR case). Add the temporary local declaration (e.g., "logic [7:0] next_shift;") in scope as shown.</p>
+  <div class="card">
+    <h2>Reproduction steps</h2>
+    <ol>
+      <li>Run existing simulation (files under /home/runner/work/FaultTrace/FaultTrace/simulation/). The first UVM_ERROR appears at ~1795 ns.</li>
+      <li>Apply the patch above to design.sv and re-run. The driver should log an ACK during the address phase instead of the UVM_ERROR.</li>
+    </ol>
+  </div>
 
-<h2>5) Why this is a DUT bug (not testbench)</h2>
-<ul>
-<li>Testbench clearly drives the master lines and releases SDA for ACK (see testbench.sv lines near 120-150: the driver sets vif.sda_drive_out <= 1'b1 and then samples vif.sda). VCD confirms master released SDA (top.intf.sda_drive_out = 1) and SCL is high when sampling.</li>
-<li>The DUT signal controlling the ACK (top.dut.sda_out_en) remains 0 at the sample times, showing DUT never attempted to ACK. This points to the DUT address-detection logic failing rather than a testbench timing error.</li>
-</ul>
+  <div class="card">
+    <h2>Files touched</h2>
+    <ul>
+      <li>/home/runner/work/FaultTrace/FaultTrace/simulation/design.sv — modify MATCH_ADDR sampling and comparison (around lines 68-86).</li>
+    </ul>
+  </div>
 
-<h2>6) Next Steps / Action Items</h2>
-<ul>
-<li>Apply the code change shown above to design.sv at the specified lines. Re-run the simulation and verify that top.dut.sda_out_en toggles low during the ACK cycles and UVM_ERRORs disappear.</li>
-<li>Optional: add a small self-check in the DUT to log when an address match occurs to simplify debugging (temporary uvm-style $display). Also consider synchronizing SCL sampling more robustly (synchronizers) if clock domains differ.</li>
-</ul>
-
-<h2>7) Appendix - Evidence</h2>
-<ul>
-<li>sim.log excerpt: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.log (first errors shown at lines near top): UVM_ERROR testbench.sv(146) @ 1795</li>
-<li>VCD snapshot used: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.vcd (signals sampled at 1795 ns)</li>
-</ul>
-
-<hr>
-<p>Report generated by automated RTL analysis on 2026-02-11.</p>
-
+  <div class="card">
+    <h2>Appendix — Quick checklist</h2>
+    <ul>
+      <li>Apply Option A change at design.sv lines ~68-86.</li>
+      <li>Re-run simulation and verify sim.log no longer contains UVM_ERROR testbench.sv(146) at ~1795 ns.</li>
+      <li>Verify sim.vcd shows top.intf.sda driven low by the DUT during ACK cycle.</li>
+    </ul>
+  </div>
 
 </body>
 </html>
