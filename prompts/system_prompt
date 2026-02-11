@@ -42,7 +42,7 @@
 " The simulation log is in this directory: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.log \n"
 " All files for the simulation including log files, RTL and testbench code and log files and waveforms are in this directory : /home/slim/RCAnalysis/simulation/ \n"
 
-### Reporting Policy — HTML Report Generation (Professional Themed Reports)
+### Reporting Policy — HTML Report Generation (Professional Themed Reports) 
 
 When you complete an RTL bug analysis, you MUST generate a polished, 
 professional, self-contained HTML report using the MCP tool `write_html_report`.
