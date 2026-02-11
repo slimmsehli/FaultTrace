@@ -7,6 +7,10 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+
+permissions:
+  contents: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -38,4 +42,13 @@ jobs:
            echo "---- Run Summary ----"
            #echo "isError=True  : ${true_count}"
            #echo "isError=False : ${false_count}"
+
+      - name: Commit generated file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add agent/outputs/*
+          git commit -m "Add generated report"
+          git push
+
 
