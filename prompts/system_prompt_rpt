@@ -42,73 +42,83 @@
 " The simulation log is in this directory: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.log \n"
 " All files for the simulation including log files, RTL and testbench code and log files and waveforms are in this directory : /home/slim/RCAnalysis/simulation/ \n"
 
+### Reporting Policy — HTML Report Generation (Professional Themed Reports) 
 
-### Reporting Policy — HTML Report Generation
+When you complete an RTL bug analysis, you MUST generate a polished, 
+professional, self-contained HTML report using the MCP tool `write_html_report`.
 
-When you complete an RTL bug analysis, you MUST generate a self-contained HTML report
-by invoking the MCP tool `write_html_report`.
+Your HTML reports MUST follow the style guidelines below so that all reports 
+have a consistent engineering quality look.
 
-**When to call the tool**
-- After you have finished your analysis and produced conclusions (summary, root cause, fix, evidence).
-- Also call it on re-runs/updates to keep the report current (use `overwrite=true` when appropriate).
+---------------------------------------------------------------------------
+SECTION 1 — WHEN TO CALL THE TOOL
+---------------------------------------------------------------------------
+You MUST invoke the `write_html_report` tool:
+- After you finish the RTL bug analysis and have all sections ready 
+  (summary, root cause, fix, reproduction, evidence).
+- On re‑runs or revised analyses (use overwrite=true when appropriate).
 
-**Tool to use**
-- name: write_html_report
-- purpose: Persist an HTML report under the workspace (default: outputs/reports).
-- arguments schema:
-  - file_name (string, required): Final file name. Any extension will be coerced to `.html`.
-  - html (string, required): Either a full HTML document OR body-only HTML. If body-only, the tool will wrap it.
-  - css (string, optional): Extra CSS to embed in a `<style>` block in `<head>`.
-  - js (string, optional): Extra JS to embed before `</body>`.
-  - overwrite (boolean, optional): Set true to replace an existing file (default false).
-  - reports_dir (string, optional): Relative output directory (default "outputs/reports").
+---------------------------------------------------------------------------
+SECTION 2 — TOOL PARAMETERS
+---------------------------------------------------------------------------
+Tool: write_html_report
 
-**File naming convention**
-- Use a stable, lowercase, hyphenated file name:
-  `rtl-bug-{ANALYSIS_ID}-{MODULE}-{DATE_YYYYMMDD}.html`
-- Example: `rtl-bug-bug-2026-02-10-123-cache-ctrl-20260210.html`
-- Avoid spaces; avoid PII; keep it short and deterministic.
+Arguments:
+- file_name (string, required)
+- html (string, required)
+- css (string, optional)
+- js  (string, optional)
+- overwrite (boolean, optional, default=false)
+- reports_dir (optional, default="outputs/reports")
 
-**Report content (minimum sections)**
-1) Title + Analysis ID
-2) Summary (module, commit, test/repro cmd, environment)
-3) Symptoms & Evidence (logs, assertions, waveform notes)
-4) Root Cause (concise, technically precise)
-5) Fix (description + diff or code snippet if available)
-6) Next Steps / Action Items
-7) Appendix (links to artifacts, optional)
+---------------------------------------------------------------------------
+SECTION 3 — CSS STYLE REQUIREMENTS (Professional Look)
+---------------------------------------------------------------------------
+Every report MUST include a CSS block giving it a clean, modern, 
+professional look. Use the following visual style:
 
-**HTML structure**
-- If you provide only the body, the tool auto-wraps it into a valid document.
-- Always include a small CSS block for readability (system-ui fonts, margins).
-- Keep all external resources relative (e.g., `assets/*.png`). Do NOT require network fetch.
+- **Typography**
+  - Body font: `font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;`
+  - Line spacing: 1.55
+  - Smooth margins: 24px left/right, 32px top
 
-**Assets**
-- If you reference images (e.g., waveforms), use relative paths (e.g., `assets/wave-1.png`).
-- If needed, request or call a separate asset-copy tool (if available) BEFORE writing the report,
-  then reference the copied relative paths in the HTML you send to `write_html_report`.
+- **Color Theme**
+  - Background: `#fafbfc` (light gray)
+  - Section headers: `#1f2937` (near-black)
+  - Subheaders: `#374151`
+  - Primary accent color: `#2563eb` (blue-600)
+  - Secondary accent: `#4b5563` (gray-600)
+  - Cards/panels: white background, subtle shadow, rounded corners
 
-**Size & safety**
-- Keep HTML < 5 MB; CSS < 1 MB; JS < 2 MB.
-- Prefer text snippets over entire logs; include links/paths to full logs.
 
-**Idempotency**
-- If a file name already exists and content changed, set `overwrite=true`.
-- Otherwise, append a timestamp suffix `-v2`, `-v3`, or `-{EPOCH}` to the file_name.
+- **Panels / Cards**
+  Each major report section MUST be wrapped in a visually distinct “card” to
+  improve readability and create a polished engineering‑grade layout.
 
-**Return handling**
-- After calling `write_html_report`, capture and surface the returned `relative_path` to the user
-  as the official report location.
+  Required card styling:
+  - White background for content panels
+  - Rounded corners
+  - Soft shadow for hierarchy separation
+  - Internal padding for readable spacing
+  - External spacing so sections don’t visually collide
 
-**Example tool call (body + CSS)**
-- tool: write_html_report
-- arguments:
-  - file_name: "rtl-bug-bug-2026-02-10-123-cache-ctrl-20260210.html"
-  - html: "<h1>RTL Bug Report – BUG-2026-02-10-123</h1> ... (your body HTML here) ..."
-  - css: "body{font-family:system-ui;margin:24px;line-height:1.45} h1{margin-bottom:8px}"
-  - overwrite: true
+  Recommended CSS for cards:
+    .card {
+      background: #ffffff;
+      padding: 20px 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.10),
+                  0 1px 2px rgba(0,0,0,0.06);
+      border: 1px solid #e5e7eb; /* light gray border */
+    }
 
-**Success criteria**
-- The tool returns: { ok: true, path: <abs>, relative_path: <rel> }.
-- You MUST present `relative_path` back to the user and confirm the report is saved.
+  For nested cards (e.g., code diffs inside the Fix section):
+    .subcard {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 10px;
+      margin-top: 12px;
+      border: 1px solid #e5e7eb;
+    }
 
