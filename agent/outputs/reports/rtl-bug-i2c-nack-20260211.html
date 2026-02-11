@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rtl Bug I2C Nack 20260211</title>
+  <style>
+body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:24px;line-height:1.45} pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto} h1{margin-bottom:6px} h2{margin-top:18px}
+</style>
+</head>
+<body>
+<h1>RTL Bug Report - i2c NACK during Address Phase (ANALYSIS-0001)</h1>
+
+<h2>1) Summary</h2>
+<ul>
+<li>Analysis ID: ANALYSIS-0001</li>
+<li>Module: i2c_slave_dut (design.sv)</li>
+<li>Symptom: UVM_ERROR reported by driver: "NACK (No ACK) received during Address phase"</li>
+<li>Repro log: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.log</li>
+<li>VCD: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.vcd</li>
+<li>Testbench file: /home/runner/work/FaultTrace/FaultTrace/simulation/testbench.sv</li>
+</ul>
+
+<h2>2) Symptoms & Evidence</h2>
+<p>Simulator log excerpt (first error):</p>
+<pre>UVM_INFO testbench.sv(84) @ 0: uvm_test_top.env.agent.driver [DRV] Starting Write: Addr=50 Data=95
+UVM_ERROR testbench.sv(146) @ 1795: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase
+</pre>
+
+<p>At the reported simulation time (1795 ns) VCD shows:</p>
+<pre>/home/runner/work/FaultTrace/FaultTrace/simulation/sim.vcd @ 1795
+ top.intf.sda        = 1
+ top.intf.scl        = 1
+ top.dut.sda_out_en  = 0
+ top.dut.state[2:0]  = 011 (READ_DATA)
+</pre>
+
+<p>Interpretation: the master drove SCL high and released SDA to read ACK. The slave was not driving SDA low (sda_out_en=0), so the observed SDA level was '1' -> NACK.</p>
+
+<h2>3) Root Cause</h2>
+<p>The DUT i2c_slave_dut drives the ACK (sda_out_en) at the wrong SCL polarity/timing. In design.sv the ACK handling blocks assert sda_out_en when SCL is low ("if (!scl) sda_out_en <= 1'b1;") and release it on SCL falling detection. That results in the slave driving SDA low while SCL is low, but releasing it before the master samples SDA during SCL high. Therefore the master always reads '1' (no ACK).</p>
+
+<p>Files & locations:</p>
+<ul>
+<li>/home/runner/work/FaultTrace/FaultTrace/simulation/design.sv
+  <ul>
+    <li>ACK_ADDR handling: lines 94-102 (as-numbered in file)</li>
+    <li>ACK_DATA handling: lines 117-123</li>
+  </ul>
+</li>
+</ul>
+
+<h2>4) Why this is a DUT (design) bug</h2>
+<ul>
+<li>The UVM driver correctly releases SDA and samples during SCL high (see testbench at /home/runner/work/FaultTrace/FaultTrace/simulation/testbench.sv). The DUT is expected to drive ACK while SCL is high so the master reads it; it doesn't. Therefore the bug is in the DUT timing/ACK logic.</li>
+</ul>
+
+<h2>5) Fix (code change + diff)</h2>
+<p>Change the ACK drive logic to assert sda_out_en when SCL is high (or on SCL rising) and release on SCL falling. Replace the current "if (!scl) sda_out_en <= 1'b1;" with an assertion when SCL is high.</p>
+
+<p>Suggested patch (file + lines): /home/runner/work/FaultTrace/FaultTrace/simulation/design.sv</p>
+<pre>--- a/design.sv
++++ b/design.sv
+@@
+-                    ACK_ADDR: begin
+-                        // Drive ACK (Low) during the 9th clock pulse
+-                        if (!scl) sda_out_en <= 1'b1; // Setup before rising edge
+-                        
+-                        if (scl_falling) begin
+-                            sda_out_en <= 1'b0; // Release after clock falls
+-                            state <= READ_DATA;
+-                            bit_cnt <= 0;
+-                        end
+-                    end
++                    ACK_ADDR: begin
++                        // Drive ACK (Low) during the 9th clock pulse: assert while SCL is high
++                        if (scl_rising) begin
++                            sda_out_en <= 1'b1; // start driving on SCL rising
++                        end
++
++                        if (scl_falling) begin
++                            sda_out_en <= 1'b0; // release after SCL falls
++                            state <= READ_DATA;
++                            bit_cnt <= 0;
++                        end
++                    end
+@@
+-                    ACK_DATA: begin
+-                         // Drive ACK (Low)
+-                        if (!scl) sda_out_en <= 1'b1;
+-                        
+-                        if (scl_falling) begin
+-                            sda_out_en <= 1'b0;
+-                            state <= IDLE; // Transaction done for this simple example
+-                        end
+-                    end
++                    ACK_DATA: begin
++                         // Drive ACK (Low) during ACK bit: assert while SCL is high
++                        if (scl_rising) begin
++                            sda_out_en <= 1'b1;
++                        end
++
++                        if (scl_falling) begin
++                            sda_out_en <= 1'b0;
++                            state <= IDLE; // Transaction done for this simple example
++                        end
++                    end
+</pre>
+
+<p>Exact locations in file (approx line numbers shown by cat -n):</p>
+<ul>
+<li>/home/runner/work/FaultTrace/FaultTrace/simulation/design.sv lines 94-102 (ACK_ADDR)</li>
+<li>/home/runner/work/FaultTrace/FaultTrace/simulation/design.sv lines 117-123 (ACK_DATA)</li>
+</ul>
+
+<h2>6) Verification / Evidence</h2>
+<ul>
+<li>VCD at 1795 ns: master sampled SDA=1 while DUT.sda_out_en=0 (no drive) and SCL=1. (see sim.vcd)</li>
+<li>testbench driver check_ack (testbench.sv line ~120-150) releases SDA and samples during SCL high; this matches expected I2C behavior.</li>
+</ul>
+
+<h2>7) Next Steps / Action Items</h2>
+<ol>
+<li>Apply the suggested fix in design.sv (lines above).</li>
+<li>Re-run simulation. Expect the DUT to assert sda_out_en during SCL high and the master to read ACK (no UVM_ERROR).</li>
+<li>Optional: add a small assertion in DUT to ensure sda_out_en is asserted during SCL high in ACK states to catch regressions.</li>
+</ol>
+
+<h2>8) Appendix</h2>
+<ul>
+<li>sim.log: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.log</li>
+<li>testbench: /home/runner/work/FaultTrace/FaultTrace/simulation/testbench.sv (driver at ~line 60-160)</li>
+<li>DUT: /home/runner/work/FaultTrace/FaultTrace/simulation/design.sv</li>
+<li>vcd: /home/runner/work/FaultTrace/FaultTrace/simulation/sim.vcd</li>
+</ul>
+
+
+</body>
+</html>
