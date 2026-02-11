@@ -545,6 +545,169 @@ def diff(path1: str, path2: str, args: str = "-u") -> str:
         temp = temp + f" OUTPUT 	: \n" + res["output"] + "\n"
         return temp
 
+
+# tool to write the report to the terminal
+# -------------------------------------------------------------
+# HTML Report Writer Tool for FastMCP
+# -------------------------------------------------------------
+import os
+import re
+import time
+import html as html_mod
+from mcp.server.fastmcp.exceptions import ToolError
+
+# Reuse your WORKSPACE_ROOT from above
+# WORKSPACE_ROOT = os.path.abspath(os.environ.get("PWD", "."))
+
+# Allow configuring the reports directory (relative to WORKSPACE_ROOT)
+DEFAULT_REPORTS_DIR = os.environ.get("REPORTS_DIR", "outputs/reports")
+
+# Size guards to avoid abuse
+MAX_HTML_BYTES = 5 * 1024 * 1024       # 5 MB
+MAX_CSS_BYTES  = 1 * 1024 * 1024       # 1 MB
+MAX_JS_BYTES   = 2 * 1024 * 1024       # 2 MB
+
+SAFE_HTML_EXT = ".html"
+
+
+def _sanitize_filename(file_name: str) -> str:
+    """
+    Keep only safe characters and force .html extension.
+    Example: 'My Report 01.html' -> 'my-report-01.html'
+    """
+    if not isinstance(file_name, str) or not file_name.strip():
+        raise ToolError("file_name must be a non-empty string")
+    base = os.path.basename(file_name)
+    base = re.sub(r"\.[^.]*$", "", base)              # strip ext
+    base = re.sub(r"[^A-Za-z0-9._-]+", "-", base)     # safe chars
+    base = base.strip("-._") or f"report-{int(time.time())}"
+    return base.lower() + SAFE_HTML_EXT
+
+
+def _size_guard(label: str, content: str, limit_bytes: int):
+    if content is None:
+        return
+    if len(content.encode("utf-8")) > limit_bytes:
+        raise ToolError(f"{label} size exceeds limit ({limit_bytes} bytes)")
+
+
+def _wrap_html_if_needed(html: str, css: str, js: str, title: str) -> str:
+    """
+    If provided HTML contains <html>...</html>, leave it as-is.
+    Otherwise, wrap body content into a minimal scaffold and embed css/js.
+    """
+    html = html or ""
+    lower = html.lower()
+    if "<html" in lower and "</html>" in lower:
+        # Assume caller provided full document.
+        return html
+
+    css_block = f"<style>\n{css}\n</style>" if css else ""
+    js_block  = f"<script>\n{js}\n</script>" if js else ""
+    safe_title = html_mod.escape(title)
+
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{safe_title}</title>
+  {css_block}
+</head>
+<body>
+{html}
+{js_block}
+</body>
+</html>"""
+
+
+@mcp.tool()
+def write_html_report(
+    file_name: str,
+    html: str,
+    css: str = "",
+    js: str = "",
+    overwrite: bool = False,
+    reports_dir: str = DEFAULT_REPORTS_DIR,
+) -> dict:
+    """
+    Write an HTML report file under the workspace (default: outputs/reports) and return paths.
+
+    Parameters
+    ----------
+    file_name : str
+        Desired file name. Any extension will be replaced with .html.
+        Example: "BUG-2026-02-10-cache-ctrl.html"
+    html : str
+        Either a full HTML document or body-only content (will be wrapped).
+    css : str, optional
+        Optional CSS to embed into <style> in <head>.
+    js : str, optional
+        Optional JavaScript to embed before </body>.
+    overwrite : bool, optional
+        If False and file exists, raise ToolError. Default False.
+    reports_dir : str, optional
+        Target directory (relative to workspace root). Default "outputs/reports".
+
+    Returns
+    -------
+    dict
+        {
+          "ok": true,
+          "path": "/abs/path/to/outputs/reports/bug-2026-02-10-cache-ctrl.html",
+          "relative_path": "outputs/reports/bug-2026-02-10-cache-ctrl.html",
+          "file_name": "bug-2026-02-10-cache-ctrl.html"
+        }
+    """
+    try:
+        # Validate sizes
+        _size_guard("HTML", html, MAX_HTML_BYTES)
+        _size_guard("CSS", css,  MAX_CSS_BYTES)
+        _size_guard("JS",  js,   MAX_JS_BYTES)
+
+        # Sanitize and prepare paths
+        safe_name = _sanitize_filename(file_name)
+
+        # Guard the reports directory (relative to workspace)
+        # Reuse your provided guard to ensure we stay inside WORKSPACE_ROOT
+        reports_dir_abs = _normalize_and_guard(reports_dir)
+        os.makedirs(reports_dir_abs, exist_ok=True)
+
+        abs_path = os.path.abspath(os.path.join(reports_dir_abs, safe_name))
+        # Ensure the target path is still inside the guarded reports_dir_abs
+        if not abs_path.startswith(reports_dir_abs + os.sep):
+            raise ToolError("Path traversal detected.")
+
+        # Compose final HTML (wrap if needed)
+        title_guess = os.path.splitext(safe_name)[0].replace("-", " ").title()
+        final_html = _wrap_html_if_needed(html=html, css=css, js=js, title=title_guess)
+
+        # Overwrite handling
+        if os.path.exists(abs_path) and not overwrite:
+            raise ToolError(f"File already exists: {abs_path}. Set overwrite=true to replace.")
+
+        # Write the file
+        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+        with open(abs_path, "w", encoding="utf-8") as f:
+            f.write(final_html)
+
+        # Compute a workspace-relative path for convenience
+        relative_from_workspace = os.path.relpath(abs_path, WORKSPACE_ROOT)
+
+        return {
+            "ok": True,
+            "path": abs_path,
+            "relative_path": relative_from_workspace,
+            "file_name": safe_name,
+        }
+
+    except ToolError:
+        # Bubble up MCP tool errors
+        raise
+    except Exception as e:
+        # Normalize all other exceptions to ToolError for consistent agent handling
+        raise ToolError(str(e))
+
 if __name__ == "__main__":
     mcp.run()
 
