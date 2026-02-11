@@ -365,71 +365,6 @@ Parameters Schema: {
   "type": "object"
 }
 ------------------------------
-Tool Name: vcd_get_signal_values_in_timeframe_scal
-Description: 
-    Return the values of a signal at a specific time window.
-    the input is the signal name and the time window high and low limit
-    
-Parameters Schema: {
-  "properties": {
-    "path": {
-      "title": "Path",
-      "type": "string"
-    },
-    "signal_name": {
-      "title": "Signal Name",
-      "type": "string"
-    },
-    "start": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "number"
-        },
-        {
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "title": "Start"
-    },
-    "end": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "number"
-        },
-        {
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "title": "End"
-    },
-    "include_start_prev": {
-      "default": true,
-      "title": "Include Start Prev",
-      "type": "boolean"
-    }
-  },
-  "required": [
-    "path",
-    "signal_name",
-    "start",
-    "end"
-  ],
-  "title": "vcd_get_signal_values_in_timeframe_scalArguments",
-  "type": "object"
-}
-------------------------------
 Tool Name: vcd_count_signal_all_transitions
 Description: 
     Return the count of the number of a signal edges in a time window
@@ -1034,6 +969,75 @@ Parameters Schema: {
     "path2"
   ],
   "title": "diffArguments",
+  "type": "object"
+}
+------------------------------
+Tool Name: write_html_report
+Description: 
+    Write an HTML report file under the workspace (default: outputs/reports) and return paths.
+
+    Parameters
+    ----------
+    file_name : str
+        Desired file name. Any extension will be replaced with .html.
+        Example: "BUG-2026-02-10-cache-ctrl.html"
+    html : str
+        Either a full HTML document or body-only content (will be wrapped).
+    css : str, optional
+        Optional CSS to embed into <style> in <head>.
+    js : str, optional
+        Optional JavaScript to embed before </body>.
+    overwrite : bool, optional
+        If False and file exists, raise ToolError. Default False.
+    reports_dir : str, optional
+        Target directory (relative to workspace root). Default "outputs/reports".
+
+    Returns
+    -------
+    dict
+        {
+          "ok": true,
+          "path": "/abs/path/to/outputs/reports/bug-2026-02-10-cache-ctrl.html",
+          "relative_path": "outputs/reports/bug-2026-02-10-cache-ctrl.html",
+          "file_name": "bug-2026-02-10-cache-ctrl.html"
+        }
+    
+Parameters Schema: {
+  "properties": {
+    "file_name": {
+      "title": "File Name",
+      "type": "string"
+    },
+    "html": {
+      "title": "Html",
+      "type": "string"
+    },
+    "css": {
+      "default": "",
+      "title": "Css",
+      "type": "string"
+    },
+    "js": {
+      "default": "",
+      "title": "Js",
+      "type": "string"
+    },
+    "overwrite": {
+      "default": false,
+      "title": "Overwrite",
+      "type": "boolean"
+    },
+    "reports_dir": {
+      "default": "outputs/reports",
+      "title": "Reports Dir",
+      "type": "string"
+    }
+  },
+  "required": [
+    "file_name",
+    "html"
+  ],
+  "title": "write_html_reportArguments",
   "type": "object"
 }
 ------------------------------
