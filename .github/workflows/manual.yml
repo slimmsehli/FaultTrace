@@ -31,11 +31,11 @@ jobs:
           cd agent
           python agent_test.py |& tee run.log
    
-           echo "---- Count occurrences ----" 
-           true_count=$(grep -c 'isError=True' run.log || true)
-           false_count=$(grep -c 'isError=False' run.log || true)
+           #echo "---- Count occurrences ----" 
+           #true_count=$(grep -c 'isError=True' run.log || true)
+           #false_count=$(grep -c 'isError=False' run.log || true)
            
            echo "---- Run Summary ----"
-           echo "isError=True  : ${true_count}"
-           echo "isError=False : ${false_count}"
+           #echo "isError=True  : ${true_count}"
+           #echo "isError=False : ${false_count}"
 
