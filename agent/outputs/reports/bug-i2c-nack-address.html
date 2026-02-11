@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>I2C NACK Investigation — Root Cause & Fix</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height:1.55; background:#fafbfc; margin:32px 24px; color:#111827 }
+    h1,h2,h3 { color:#1f2937; margin-top:0 }
+    h2 { color:#374151 }
+    .card { background:#ffffff; padding:20px 24px; border-radius:12px; margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.10),0 1px 2px rgba(0,0,0,0.06); border:1px solid #e5e7eb }
+    .subcard { background:#f9fafb; padding:16px; border-radius:10px; margin-top:12px; border:1px solid #e5e7eb }
+    .muted { color:#6b7280 }
+    pre { background:#0f172a; color:#e6edf3; padding:12px; border-radius:8px; overflow:auto }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace }
+    .evidence { font-size:0.95rem }
+    .good { color:#16a34a }
+    .bad { color:#dc2626 }
+  </style>
+</head>
+<body>
+  <h1>I2C NACK during Address Phase — Investigation</h1>
+
+  <div class="card">
+    <h2>Summary</h2>
+    <p>A UVM_ERROR was reported by the driver: "NACK (No ACK) received during Address phase" (testbench.sv(146)) at simulation time 1795 ns. Root cause: the DUT's address-match logic compares the wrong bits of the 8-bit received shift register, so the slave never recognizes the master's 7-bit address and therefore does not assert ACK.</p>
+  </div>
+
+  <div class="card">
+    <h2>Key Evidence</h2>
+    <div class="subcard">
+      <h3>Simulation Log (excerpt)</h3>
+      <pre class="evidence">UVM_INFO @ 0: reporter [RNTST] Running test i2c_test...
+UVM_INFO testbench.sv(84) @ 0: uvm_test_top.env.agent.driver [DRV] Starting Write: Addr=50 Data=95
+UVM_ERROR testbench.sv(146) @ 1795: uvm_test_top.env.agent.driver [DRV] NACK (No ACK) received during Address phase</pre>
+    </div>
+
+    <div class="subcard">
+      <h3>Waveform snapshot at 1795 ns (from sim.vcd)</h3>
+      <pre class="evidence">top.intf.sda             = 1
+top.intf.sda_drive_out    = 1   (master released SDA to float/high)
+top.dut.sda_out_en        = 0   (DUT not driving ACK low)
+top.dut.sda              = 1
+top.dut.sda_d            = 1</pre>
+      <p class="muted">At the time the driver released SDA to sample the ACK, the DUT was not driving SDA low.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Code Analysis & Root Cause</h2>
+    <p>Files inspected:</p>
+    <ul>
+      <li>/home/runner/work/FaultTrace/FaultTrace/simulation/testbench.sv</li>
+      <li>/home/runner/work/FaultTrace/FaultTrace/simulation/design.sv</li>
+    </ul>
+
+    <p>Relevant DUT excerpt (design.sv):</p>
+    <pre><code>// design.sv (lines ~76-88)
+if (scl_rising) begin
+    shift_reg <= {shift_reg[6:0], sda};
+    if (bit_cnt == 7) begin
+        // 7 bits addr + 1 bit R/W.
+        // We check top 7 bits against SLAVE_ADDR
+        if (shift_reg[6:0] == SLAVE_ADDR) begin
+            state <= ACK_ADDR;
+        end else begin
+            state <= IDLE; // Not our address
+        end
+        bit_cnt <= 0;
+    end else begin
+        bit_cnt <= bit_cnt + 1;
+    end
+end</code></pre>
+
+    <p>Problem: The master sends the address MSB-first then the R/W LSB. With the implemented shift (shift_reg &lt;=&nbsp; {shift_reg[6:0], sda}), the newest sampled bit is placed into shift_reg[0]. After 8 samples the 7-bit address resides in shift_reg[7:1], not in shift_reg[6:0]. The code incorrectly compares shift_reg[6:0] against SLAVE_ADDR, so the DUT compares the wrong 7 bits (including the R/W bit) and therefore fails to detect its address. This prevents DUT from asserting ACK (sda_out_en remains 0), matching the VCD evidence and the UVM_ERROR.</p>
+  </div>
+
+  <div class="card">
+    <h2>Concrete Fix</h2>
+    <p>Change the address comparison to use shift_reg[7:1] instead of shift_reg[6:0].</p>
+
+    <div class="subcard">
+      <h3>File</h3>
+      <p>/home/runner/work/FaultTrace/FaultTrace/simulation/design.sv</p>
+      <p>Location: around line 82 (see file with line numbers)</p>
+    </div>
+
+    <div class="subcard">
+      <h3>Patch (exact change)</h3>
+      <pre><code>-                                if (shift_reg[6:0] == SLAVE_ADDR) begin
++                                if (shift_reg[7:1] == SLAVE_ADDR) begin</code></pre>
+      <p class="muted">This keeps the rest of your FSM and bit counting unchanged; it aligns the received bits with the 7-bit slave address sent MSB-first.</p>
+    </div>
+
+    <div class="subcard">
+      <h3>File/Line reference</h3>
+      <p>design.sv: original comparison at line 82 (as shipped); replace there. See file content with line numbers for context:</p>
+      <pre class="evidence">(design.sv lines 76..88)
+76	MATCH_ADDR: begin
+77	    if (scl_rising) begin
+78	        shift_reg <= {shift_reg[6:0], sda};
+79	        if (bit_cnt == 7) begin
+80	            // 7 bits addr + 1 bit R/W. 
+81	            // We check top 7 bits against SLAVE_ADDR
+82	            if (shift_reg[6:0] == SLAVE_ADDR) begin
+83	                state <= ACK_ADDR;
+84	            end else begin
+85	                state <= IDLE; // Not our address
+86	            end
+87	            bit_cnt <= 0;
+88	        end else begin</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Verification Steps</h2>
+    <ol>
+      <li>Apply the one-line change in design.sv (line ~82): compare shift_reg[7:1] with SLAVE_ADDR.</li>
+      <li>Re-run the simulation. Observe that top.dut.sda_out_en asserts (becomes 1) during the ACK bit window and top.intf.sda is driven low at ACK sampling time.</li>
+      <li>Confirm sim.log no longer shows the UVM_ERROR at testbench.sv(146) and the driver prints an ACK message instead.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Notes & Additional Recommendations</h2>
+    <ul>
+      <li>This is a DUT coding bug (incorrect bit indexing) — the testbench behaved as expected (it released SDA and sampled the ACK). Evidence: VCD shows master released SDA and DUT did not drive it low.</li>
+      <li>Optional: add a comment in design.sv to document bit ordering and the mapping between shift_reg bits and the received serial stream to avoid regression.</li>
+      <li>Optional robustness: add a small state/edge debug signal, or capture the received byte to a visible register in VCD for easier debugging in future (remember VCD cannot show UVM class variables).</li>
+    </ul>
+  </div>
+
+  <footer class="muted">Report generated for /home/runner/work/FaultTrace/FaultTrace/simulation — investigation completed.</footer>
+</body>
+</html>
