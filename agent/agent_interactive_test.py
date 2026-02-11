@@ -97,7 +97,7 @@ async def run_agent_loop():
             # --- LOOP 2: Autonomous Agent Reasoning (Max 20 Iterations) ---
             print(f"[INFO] : Agent is starting work on your request...")
 
-            for i in range(20):
+            for i in range(50):
                 response = client.chat.completions.create(
                     model=gpt_model,
                     messages=messages,

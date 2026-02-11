@@ -23,8 +23,8 @@ client = OpenAI()
 
 ## load external prompts
 from pathlib import Path
-system_prompt = Path("../prompts/system_prompt_tools_test_CI").read_text() # load system prompt
-user_prompt = Path("../prompts/user_prompt_tool_test_CI").read_text() #this is only to be able to change the initial request made to the agent
+system_prompt = Path("../prompts/system_prompt").read_text() # load system prompt
+user_prompt = Path("../prompts/user_prompt").read_text() #this is only to be able to change the initial request made to the agent
 
 # GPT model to be used
 gpt_model = "gpt-5-mini" #"gpt-4o"
