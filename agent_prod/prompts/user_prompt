@@ -1,0 +1,8 @@
+
+A simulation has failed. Please debug it and root cause the issue.
+ 
+Log file   : /home/slim/FaultTrace/agent_clean/simulation/sim.log
+VCD file   : /home/slim/FaultTrace/agent_clean/simulation/sim.vcd
+Source dir : /home/slim/FaultTrace/agent_clean/rtl/
+DUT name   : i2c_slave_dut
+
