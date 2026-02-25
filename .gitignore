@@ -2,4 +2,6 @@ venv
 .env
 .idea
 simulation/simdir/
+agent_prod/simulation/runme.csh
+agent_prod/simulation/simdir
 __pycache__

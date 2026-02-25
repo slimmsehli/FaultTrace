@@ -1,6 +1,5 @@
 // i2c_uvm_tb.sv
 
-`include "design.sv"
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 
