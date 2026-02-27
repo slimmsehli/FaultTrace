@@ -1,0 +1,16 @@
+HTML report saved: outputs/reports/rtl-bug-analysis-0001-i2c-slave-20260227.html
+
+Concise root cause & fix
+- Root cause: DUT mis-indexes received address bits. After 8 MSB-first shifts the 7-bit address is in shift_reg[7:1], but the DUT compares shift_reg[6:0] to SLAVE_ADDR, so address match fails and DUT never drives ACK.
+- File/location: /home/slim/FaultTrace/agent_prod/rtl/design.sv (MATCH_ADDR case, ~lines 76–83)
+- One-line fix: change
+    if (shift_reg[6:0] == SLAVE_ADDR) begin
+  to
+    if (shift_reg[7:1] == SLAVE_ADDR) begin
+
+Verification steps
+1. Apply the change in design.sv (line ~82).
+2. Re-run /home/slim/FaultTrace/agent_prod/simulation/runme.csh.
+3. Confirm sim.log no longer shows the UVM_ERROR and sim.vcd shows DUT asserting ACK (tb_top.dut.sda_out_en==1 and tb_top.intf.sda==0) during ACK sample.
+
+I'm done the root cause analysis of simulation
