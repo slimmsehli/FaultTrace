@@ -12,7 +12,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-TOPDIR = os.getenv("PWD", "..")
+TOPDIR = os.getenv("TOPDIR", ".")
 
 
 ################################ MCP server definition

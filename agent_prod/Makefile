@@ -2,9 +2,12 @@
 
 default: echo "Nothing to run"
 
+clean:
+	rm -rf output sessions logs
 
 run:
-	python3 ./agent/agent.py --run-id cache
+	cd agent ;\
+	python3 agent.py --run-id cache
 
 
 

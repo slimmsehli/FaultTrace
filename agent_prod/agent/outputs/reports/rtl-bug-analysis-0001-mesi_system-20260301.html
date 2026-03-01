@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rtl Bug Analysis 0001 Mesi_System 20260301</title>
+  <style>
+body { font-family: system-ui, sans-serif; line-height: 1.5; margin: 2rem; color: #333; } pre { background: #f4f4f4; padding: 1rem; border-radius: 4px; border: 1px solid #ddd; } .timing-diagram { font-family: "Courier New", Courier, monospace; line-height: 1.2; background: #1e1e1e; color: #dcdcdc; } .confidence-high { color: #28a745; font-weight: bold; } .confidence-med { color: #ffc107; font-weight: bold; } .confidence-low { color: #dc3545; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>RTL Bug Report – ANALYSIS-0001 (updated)</h1>
+<p class="confidence-med">Confidence: 70% - Root cause supported by testbench failure logs and RTL inspection; VCD missing so dynamic signal traces unavailable.</p>
+<h2>Summary</h2>
+<ul>
+<li>Module: mesi_system (top-level)</li>
+<li>Files analyzed (important):
+  <ul>
+    <li>/home/slim/FaultTrace/simulation/cache/tb/tb_mesi_system.v</li>
+    <li>/home/slim/FaultTrace/simulation/cache/rtl/mesi_system.v</li>
+    <li>/home/slim/FaultTrace/simulation/cache/rtl/mesi_cache.v</li>
+    <li>/home/slim/FaultTrace/simulation/cache/rtl/memory.v</li>
+  </ul>
+</li>
+<li>Test / repro: sim run producing logs in simoutput/sim.log</li>
+</ul>
+<h2>Symptoms & Evidence</h2>
+<pre>
+- Testbench reported 9 failures; key failures shown in simoutput/sim.log
+- Fail examples:
+  [FAIL] Cache1 index4 state = Exclusive)  (expected Shared)
+  [FAIL] (Core1 supplied) = 0x00000004  (expected 0xdeadbeef)
+- Memory base computation in memory.v (line 43):
+  wire [$clog2(DEPTH)-1:0] base = (bus_addr >> (2 + $clog2(LINE_WORDS))) * LINE_WORDS; //FIX
+  This line is suspect and a commented clearer form is present in the file.
+- No VCD under simresult; testbench dumps to simoutput/sim.vcd.
+</pre>
+<h2>Root Cause</h2>
+<p>The main, high-confidence issue is the incorrect memory base index calculation in memory.v which likely results in reading/writing the wrong memory words for a given bus address. This causes data mismatches observed by the testbench and can produce incorrect state transitions (e.g., caches believing other cores supplied different values).</p>
+<h2>Fix</h2>
+<p>Edit /home/slim/FaultTrace/simulation/cache/rtl/memory.v and replace the 'base' definition with:</p>
+<pre>wire [$clog2(DEPTH)-1:0] base = bus_addr[ADDR_BITS-1:2] * LINE_WORDS;</pre>
+<p>File location: around line 42-45 in memory.v.</p>
+<h2>Next steps</h2>
+<ol>
+<li>Apply patch, rerun simulation, check simoutput/sim.log.</li>
+<li>If failures persist, produce / locate VCD (simoutput/sim.vcd) and inspect bus and snoop signals.</li>
+</ol>
+
+
+</body>
+</html>
