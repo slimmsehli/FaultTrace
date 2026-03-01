@@ -1,0 +1,10 @@
+
+A simulation has failed. Please debug it and root cause the issue.
+ 
+compile script : /home/slim/FaultTrace/agent_prod/simulation/runme.csh
+Log file   : /home/slim/FaultTrace/agent_prod/simulation/sim.log
+VCD file   : /home/slim/FaultTrace/agent_prod/simulation/sim.vcd
+Source dir : /home/slim/FaultTrace/agent_prod/rtl/
+testbench dir : /home/slim/FaultTrace/agent_prod/tb/
+DUT name   : i2c_slave_dut
+

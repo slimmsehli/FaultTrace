@@ -12,6 +12,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+TOPDIR = os.getenv("PWD", "..")
 
 
 ################################ MCP server definition
@@ -66,10 +67,10 @@ class ToolConfig:
 
 @dataclass
 class PathConfig:
-    prompts_dir:  Path = Path("../prompts")
-    output_dir:   Path = Path("../output")
-    log_dir:      Path = Path("../logs")
-    sessions_dir: Path = Path("../sessions")  # reserved for session persistence (Phase 2)
+    prompts_dir:  Path = Path(f"{TOPDIR}/prompts")
+    output_dir:   Path = Path(f"{TOPDIR}/output")
+    log_dir:      Path = Path(f"{TOPDIR}/logs")
+    sessions_dir: Path = Path(f"{TOPDIR}/sessions")  # reserved for session persistence (Phase 2)
 
     def ensure_dirs(self) -> None:
         for p in (self.output_dir, self.log_dir, self.sessions_dir):
@@ -94,12 +95,12 @@ class AgentConfig:
         MCPServerConfig(
             label="rtl-file-parser",
             command="python",
-            args=["../server/mcp_server_str_wrapper.py"],
+            args=[f"{TOPDIR}/server/mcp_server_str_wrapper.py"],
         ),
         MCPServerConfig(
             label="linux-terminal",
             command="python",
-            args=["../server/mcp_server_terminal.py"],
+            args=[f"{TOPDIR}/server/mcp_server_terminal.py"],
         ),
     ])
 
