@@ -1,0 +1,4 @@
+Report updated and saved:
+outputs/reports/rtl-bug-analysis-0001-mesi_system-20260301.html
+
+I'm done the root cause analysis of simulation

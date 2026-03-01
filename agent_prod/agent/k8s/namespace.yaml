@@ -1,0 +1,107 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# k8s/namespace.yaml — FaultTrace Namespace
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: faulttrace
+  labels:
+    app: faulttrace
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# k8s/serviceaccount.yaml — Minimal ServiceAccount
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: faulttrace-sa
+  namespace: faulttrace
+  labels:
+    app: faulttrace
+automountServiceAccountToken: false   # agent doesn't need K8s API access
+
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# k8s/pvc.yaml — Persistent Volume Claims
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Four PVCs — one per data type.  This lets you:
+#   * Mount prompts as read-only (populated by your CI pipeline)
+#   * Mount output/logs/sessions as writable (populated by the agent)
+#   * Backup/restore each independently
+#   * Use different storage classes per data type (e.g. fast SSD for output)
+#
+# Adjust storageClassName and storage sizes for your cluster.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Prompts PVC (read-only mount, populated externally)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: faulttrace-prompts-pvc
+  namespace: faulttrace
+  labels:
+    app: faulttrace
+    data-type: prompts
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard   # replace with your cluster's storage class
+  resources:
+    requests:
+      storage: 100Mi
+
+---
+# Output PVC (agent writes reports here)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: faulttrace-output-pvc
+  namespace: faulttrace
+  labels:
+    app: faulttrace
+    data-type: output
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# Logs PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: faulttrace-logs-pvc
+  namespace: faulttrace
+  labels:
+    app: faulttrace
+    data-type: logs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# Sessions PVC (session browser + history JSON)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: faulttrace-sessions-pvc
+  namespace: faulttrace
+  labels:
+    app: faulttrace
+    data-type: sessions
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Gi

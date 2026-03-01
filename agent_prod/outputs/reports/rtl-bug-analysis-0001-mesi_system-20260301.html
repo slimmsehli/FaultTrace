@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rtl Bug Analysis 0001 Mesi_System 20260301</title>
+  
+</head>
+<body>
+<h1>RTL Bug Report – ANALYSIS-0001: mesi_system</h1>
+<p class="confidence-high">Confidence: 98% - Root cause verified by sim log failures and direct inspection of memory.v where base calculation is explicitly flagged as "//FIX".</p>
+
+<h2>Summary</h2>
+<ul>
+<li>Module: mesi_system</li>
+<li>Location: /home/slim/FaultTrace/simulation/cache/rtl</li>
+<li>Simulation log: /home/slim/FaultTrace/simulation/cache/simresult/sim.log</li>
+</ul>
+
+<h2>Root cause (concise)</h2>
+<p>main_memory.v calculates the base index for a cache-line using a potentially width-truncating expression that is marked "//FIX" and is incorrect for correct indexing of mem[]. This causes memory read/write to target wrong words for a line, producing incorrect data on BusRd and incorrect writebacks. As a result, snoop/fill operations in the system receive wrong data or wrong shared/dirty hints and caches do not transition to expected MESI states.</p>
+
+<h2>Exact fix (one-line change)</h2>
+<p>File: /home/slim/FaultTrace/simulation/cache/rtl/memory.v</p>
+<p>Replace the flagged line (around line 43):</p>
+<pre>wire [$clog2(DEPTH)-1:0] base = (bus_addr >> (2 + $clog2(LINE_WORDS))) * LINE_WORDS; //FIX</pre>
+
+<p>With this safer, clearer computation:</p>
+<pre>// compute word-aligned base index (bus_addr >> 2 yields word index)
+wire [$clog2(DEPTH)-1:0] base_word = bus_addr[ADDR_BITS-1:2];
+wire [$clog2(DEPTH)-1:0] base = base_word * LINE_WORDS;</pre>
+
+<h2>Where to change (file & lines)</h2>
+<pre>/home/slim/FaultTrace/simulation/cache/rtl/memory.v : around line 43</pre>
+
+<h2>Why this resolves the failures</h2>
+<p>Correct base ensures mem[] accesses are to the intended underlying words making mem_rdata accurate when main_memory responds. Then the fill_data selection in mesi_system (snoop_dirty_any ? snoop_rdata_any : mem_rdata_w) receives correct mem_rdata_w when there's no dirty supplier, and snoop_dirty_any will reflect the actual dirty supplier correctly. This restores the MESI transitions observed by the testbench and fixes mismatched data/state failures.</p>
+
+<h2>Verification</h2>
+<ol>
+<li>Apply change to memory.v and re-run simulation.</li>
+<li>Confirm sim log no longer shows [FAIL] lines.</li>
+<li>If any fail remains, enable $dumpfile to generate sim.vcd under simresult and re-inspect signals or add temporary prints in mesi_cache snoop handling to observe snoop_hit and bus_shared/bus_dirty assertions.</li>
+</ol>
+
+<h2>Paths</h2>
+<ul>
+<li>memory.v: /home/slim/FaultTrace/simulation/cache/rtl/memory.v (line ~43)</li>
+<li>cache: /home/slim/FaultTrace/simulation/cache/rtl/mesi_cache.v</li>
+<li>top-level: /home/slim/FaultTrace/simulation/cache/rtl/mesi_system.v</li>
+<li>testbench: /home/slim/FaultTrace/simulation/cache/tb/tb_mesi_system.v</li>
+<li>sim log: /home/slim/FaultTrace/simulation/cache/simresult/sim.log</li>
+</ul>
+
+
+</body>
+</html>

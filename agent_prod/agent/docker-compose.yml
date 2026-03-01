@@ -1,0 +1,132 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# FaultTrace — docker-compose.yml
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Services
+# ────────
+#   faulttrace   — the debug agent (default: uses OpenAI)
+#   ollama       — local Ollama server (optional, comment out if not needed)
+#
+# USAGE
+# ─────
+# Run with OpenAI (default):
+#   docker compose up faulttrace
+#
+# Run with local Ollama:
+#   docker compose --profile local-llm up
+#
+# Run with vLLM (bring your own vLLM container):
+#   FAULTTRACE_PROVIDER=vllm \
+#   VLLM_BASE_URL=http://host.docker.internal:8000/v1 \
+#   docker compose up faulttrace
+#
+# Run with Anthropic:
+#   FAULTTRACE_PROVIDER=anthropic \
+#   ANTHROPIC_API_KEY=sk-ant-... \
+#   docker compose up faulttrace
+#
+# ENVIRONMENT FILE
+# ────────────────
+# Copy .env.example to .env and fill in your API keys.
+# docker-compose automatically loads .env from the project root.
+# ══════════════════════════════════════════════════════════════════════════════
+
+version: "3.9"
+
+services:
+
+  # ── FaultTrace Agent ─────────────────────────────────────────────────────────
+  faulttrace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: faulttrace:latest
+    container_name: faulttrace-agent
+    restart: "no"   # one-shot debug run, not a daemon
+
+    environment:
+      # ── Provider selection ─────────────────────────────────────────────────
+      FAULTTRACE_PROVIDER:         ${FAULTTRACE_PROVIDER:-openai}
+      FAULTTRACE_MODEL:            ${FAULTTRACE_MODEL:-gpt-4o}
+      FAULTTRACE_BASE_URL:         ${FAULTTRACE_BASE_URL:-}
+      FAULTTRACE_TEMPERATURE:      ${FAULTTRACE_TEMPERATURE:-1.0}
+      FAULTTRACE_MAX_TOKENS:       ${FAULTTRACE_MAX_TOKENS:-4096}
+
+      # ── Loop tuning ────────────────────────────────────────────────────────
+      FAULTTRACE_MAX_ITERATIONS:   ${FAULTTRACE_MAX_ITERATIONS:-50}
+      FAULTTRACE_MAX_IDLE_TURNS:   ${FAULTTRACE_MAX_IDLE_TURNS:-3}
+      FAULTTRACE_CONTEXT_BUDGET:   ${FAULTTRACE_CONTEXT_BUDGET:-500000}
+
+      # ── API Keys (loaded from .env) ────────────────────────────────────────
+      OPENAI_API_KEY:              ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY:           ${ANTHROPIC_API_KEY:-}
+      GOOGLE_API_KEY:              ${GOOGLE_API_KEY:-}
+      VLLM_API_KEY:                ${VLLM_API_KEY:-token-abc123}
+
+      # ── On-prem endpoints ──────────────────────────────────────────────────
+      OLLAMA_BASE_URL:             ${OLLAMA_BASE_URL:-http://ollama:11434/v1}
+      VLLM_BASE_URL:               ${VLLM_BASE_URL:-http://host.docker.internal:8000/v1}
+
+    volumes:
+      # Mount prompts read-only (your system_prompt + user_prompt files)
+      - ./prompts:/app/prompts:ro
+      # Mount output, logs, sessions as writable host directories
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - ./sessions:/app/sessions
+
+    networks:
+      - faulttrace-net
+
+    depends_on:
+      ollama:
+        condition: service_healthy
+        required: false   # only blocks if ollama profile is active
+
+
+  # ── Ollama (local LLM server) ─────────────────────────────────────────────
+  # Enable with: docker compose --profile local-llm up
+  # First run: docker compose exec ollama ollama pull llama3.1
+  ollama:
+    profiles: ["local-llm"]
+    image: ollama/ollama:latest
+    container_name: faulttrace-ollama
+    restart: unless-stopped
+
+    ports:
+      - "11434:11434"
+
+    volumes:
+      - ollama-models:/root/.ollama   # persist pulled models
+
+    environment:
+      OLLAMA_KEEP_ALIVE: "24h"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    networks:
+      - faulttrace-net
+
+    # GPU support — uncomment if you have NVIDIA GPU
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+
+networks:
+  faulttrace-net:
+    driver: bridge
+
+volumes:
+  ollama-models:
+    driver: local

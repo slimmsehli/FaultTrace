@@ -1,0 +1,124 @@
+
+============================================================
+ ld read miss (Core 0, addr=0x10)
+============================================================
+  Memory pre-fill: word[n] = n
+  0x10 -> word index 4 -> expected value 4
+
+  [BUS] BusRd   addr=0x10
+  Core 0 got: 0x00000004
+  [PASS] 0 rdata (word 4) = 0x00000004
+  [PASS] Cache0 index4 state = Exclusive)
+  Bus BusRd count: 1 (expected 1)
+
+============================================================
+ ad hit (Core 0, addr=0x10 again)
+============================================================
+  [PASS] ore0 rdata (hit) = 0x00000004
+  [PASS] Cache0 index4 state = Exclusive)
+  Bus BusRd count since test: 0 (expected 0 - served from cache)
+
+============================================================
+ e 1 reads 0x10 held E by Core 0)
+============================================================
+  [BUS] BusRd   addr=0x10
+  [PASS] 1 rdata (shared) = 0x00000004
+  [PASS] Cache0 index4 state = Shared)   
+  [FAIL] Cache1 index4 state = Exclusive)  (expected Shared)   )
+  Bus BusRd count since test: 1 (expected 1)
+
+============================================================
+ re 0 writes 0x10, S->M + BusInv)
+============================================================
+  [BUS] BusInv  addr=0x10
+  [PASS] Cache0 index4 state = (Modified)
+  [PASS] Cache1 index4 state = Invalid)  
+  Bus BusInv count since test: 1 (expected 1)
+
+============================================================
+ (Core 1 reads 0x10, Core 0 M->S)
+============================================================
+  [BUS] BusRd   addr=0x10
+  [PASS] om dirty Core 0) = 0xdeadbeef
+  [PASS] Cache0 index4 state = Shared)   
+  [FAIL] Cache1 index4 state = Exclusive)  (expected Shared)   )
+  Bus BusRd count since test: 1 (expected 1)
+
+============================================================
+ sive write (E->M silent upgrade)
+============================================================
+  [BUS] BusRd   addr=0x20
+  [PASS] Cache1 index0 state = Exclusive)
+  [PASS] Cache0 index0 state = Invalid)  
+  [FAIL] Cache1 index0 state = Exclusive)  (expected (Modified))
+  Bus BusInv count since test: 0 (expected 0 - no BusInv for E->M)
+
+============================================================
+ 7: Dirty eviction with writeback
+============================================================
+  [BUS] BusInv  addr=0x30
+  [PASS] Cache0 index4 state = (Modified)
+  [BUS] BusWB   addr=0x10
+  [BUS] BusRd   addr=0x30
+  Bus BusWB count since test: 1 (expected 1)
+  [FAIL] (Core1 supplied) = 0x00000004  (expected 0xdeadbeef)
+
+============================================================
+  stress (ping-pong on same line)
+============================================================
+  Both cores write different words of address 0x40 alternately
+  [BUS] BusWB   addr=0x30
+  [BUS] BusRd   addr=0x10
+  [FAIL] Cache0 index0 state = Invalid)    (expected (Modified))
+  [FAIL] Cache1 index0 state = (Modified)  (expected Invalid)  )
+  [BUS] BusRd   addr=0x40
+  [BUS] BusRd   addr=0x44
+  [PASS] Cache1 index1 state = (Modified)
+  [PASS] Cache0 index1 state = Invalid)  
+  Iteration 0: coherence maintained
+  [PASS] Cache0 index0 state = (Modified)
+  [FAIL] Cache1 index0 state = (Modified)  (expected Invalid)  )
+  [PASS] Cache1 index1 state = (Modified)
+  [PASS] Cache0 index1 state = Invalid)  
+  Iteration 1: coherence maintained
+  [PASS] Cache0 index0 state = (Modified)
+  [FAIL] Cache1 index0 state = (Modified)  (expected Invalid)  )
+  [PASS] Cache1 index1 state = (Modified)
+  [PASS] Cache0 index1 state = Invalid)  
+  Iteration 2: coherence maintained
+  [PASS] Cache0 index0 state = (Modified)
+  [FAIL] Cache1 index0 state = (Modified)  (expected Invalid)  )
+  [PASS] Cache1 index1 state = (Modified)
+  [PASS] Cache0 index1 state = Invalid)  
+  Iteration 3: coherence maintained
+
+============================================================
+ ECK: Cross-core read-after-write
+============================================================
+  [BUS] BusRd   addr=0x44
+  [PASS] st write to 0x44 = 0xb0000003
+
+============================================================
+ COMPLETE — Transaction Summary
+============================================================
+  Total BusRd         : 9
+  Total BusInvalidate : 2
+  Total BusWriteback  : 2
+  Total bus txns      : 13
+
+  MESI Protocol coverage:
+    I -> E  (cold read, exclusive)      : Test 1,6
+    E -> S  (another cache reads same)  : Test 3
+    S -> M  (write, BusInv issued)      : Test 4
+    M -> S  (another cache reads dirty) : Test 5
+    M -> I  (eviction, BusWB issued)    : Test 7
+    E -> M  (write to exclusive, silent): Test 6
+    S -> I  (snooped BusInv)            : Test 4
+
+
+============================================================
+                    TEST RESULT :
+============================================================
+  Test         : FAIL
+  Found errors :           9
+- tb/tb_mesi_system.v:463: Verilog $finish

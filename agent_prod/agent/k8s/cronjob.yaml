@@ -1,0 +1,113 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# k8s/cronjob.yaml — FaultTrace Nightly Regression CronJob (optional)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Runs FaultTrace automatically on a schedule (e.g. after nightly sim runs).
+# This is optional — delete this file if you only want manual/CI-triggered runs.
+#
+# Trigger manually (without waiting for schedule):
+#   kubectl create job --from=cronjob/faulttrace-nightly faulttrace-manual-$(date +%s) -n faulttrace
+# ══════════════════════════════════════════════════════════════════════════════
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: faulttrace-nightly
+  namespace: faulttrace
+  labels:
+    app: faulttrace
+    run-type: nightly
+spec:
+  # Run at 02:00 UTC every day (after nightly sim jobs typically finish)
+  schedule: "0 2 * * *"
+  timeZone: "UTC"
+
+  concurrencyPolicy: Forbid        # don't start a new run if one is still going
+  successfulJobsHistoryLimit: 7    # keep last 7 successful run records
+  failedJobsHistoryLimit: 3
+
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      ttlSecondsAfterFinished: 86400   # clean up after 24h
+
+      template:
+        metadata:
+          labels:
+            app: faulttrace
+            run-type: nightly
+        spec:
+          restartPolicy: Never
+          serviceAccountName: faulttrace-sa
+
+          containers:
+          - name: faulttrace
+            image: faulttrace:latest
+            imagePullPolicy: IfNotPresent
+            args:
+            - "--run-id"
+            - "nightly-$(date +%Y%m%d)"
+
+            envFrom:
+            - configMapRef:
+                name: faulttrace-config
+
+            env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: faulttrace-secrets
+                  key: openai-api-key
+                  optional: true
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: faulttrace-secrets
+                  key: anthropic-api-key
+                  optional: true
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: faulttrace-secrets
+                  key: google-api-key
+                  optional: true
+
+            volumeMounts:
+            - name: prompts
+              mountPath: /app/prompts
+              readOnly: true
+            - name: output
+              mountPath: /app/output
+            - name: logs
+              mountPath: /app/logs
+            - name: sessions
+              mountPath: /app/sessions
+
+            resources:
+              requests:
+                cpu:    "250m"
+                memory: "256Mi"
+              limits:
+                cpu:    "1000m"
+                memory: "1Gi"
+
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 1000
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+
+          volumes:
+          - name: prompts
+            persistentVolumeClaim:
+              claimName: faulttrace-prompts-pvc
+          - name: output
+            persistentVolumeClaim:
+              claimName: faulttrace-output-pvc
+          - name: logs
+            persistentVolumeClaim:
+              claimName: faulttrace-logs-pvc
+          - name: sessions
+            persistentVolumeClaim:
+              claimName: faulttrace-sessions-pvc

@@ -59,10 +59,22 @@ def _parse_args() -> argparse.Namespace:
         help="Unique name for this run. Used in all output and log filenames.",
     )
     parser.add_argument(
+        "--provider",
+        default=None,
+        metavar="NAME",
+        help="LLM provider: openai | anthropic | gemini | ollama | vllm",
+    )
+    parser.add_argument(
         "--model",
         default=None,
         metavar="NAME",
-        help="Override LLM model from config.py (e.g. gpt-4o, gpt-4o-mini).",
+        help="Override LLM model (e.g. gpt-4o, claude-opus-4-5, llama3.1).",
+    )
+    parser.add_argument(
+        "--base-url",
+        default=None,
+        metavar="URL",
+        help="Custom LLM endpoint (e.g. http://localhost:11434/v1 for Ollama).",
     )
     parser.add_argument(
         "--max-iterations",
@@ -86,8 +98,12 @@ async def _run(args: argparse.Namespace) -> int:
 
     # ── 1. Build config and apply CLI overrides ────────────────────────────────
     cfg = AgentConfig()
+    if args.provider:
+        cfg.llm.provider = args.provider
     if args.model:
         cfg.llm.model = args.model
+    if args.base_url:
+        cfg.llm.base_url = args.base_url
     if args.max_iterations:
         cfg.loop.max_iterations = args.max_iterations
     if args.prompts_dir:
@@ -98,11 +114,13 @@ async def _run(args: argparse.Namespace) -> int:
     log = get_logger(__name__)
 
     log.info("═══════════════════════════════════════════════")
-    log.info("  RTL Debug Agent")
-    log.info("  run_id  : %s", args.run_id)
-    log.info("  model   : %s", cfg.llm.model)
-    log.info("  prompts : %s", cfg.paths.prompts_dir)
-    log.info("  output  : %s", cfg.paths.output_dir)
+    log.info("  FaultTrace RTL Debug Agent")
+    log.info("  run_id   : %s", args.run_id)
+    log.info("  provider : %s", cfg.llm.provider)
+    log.info("  model    : %s", cfg.llm.model)
+    log.info("  base_url : %s", cfg.llm.base_url or "default")
+    log.info("  prompts  : %s", cfg.paths.prompts_dir)
+    log.info("  output   : %s", cfg.paths.output_dir)
     log.info("═══════════════════════════════════════════════")
 
     # ── 3. Run ─────────────────────────────────────────────────────────────────

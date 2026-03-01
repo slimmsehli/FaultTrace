@@ -36,7 +36,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from openai.types.chat import ChatCompletionMessage
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from llm_client import BaseLLMClient
 
 from tool_executor import ToolResult, result_to_message
 from logger import get_logger
@@ -77,9 +79,11 @@ class MessageHistory:
         user_prompt:   str,
         token_budget:  int = 100_000,
         min_pairs:     int = 6,
+        llm_client:    Any = None,   # BaseLLMClient — optional, for provider-aware formatting
     ) -> None:
         self._token_budget = token_budget
         self._min_pairs    = min_pairs
+        self._llm_client   = llm_client   # used by append_assistant
         self._raw: list[dict] = [
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_prompt},
@@ -91,13 +95,19 @@ class MessageHistory:
 
     # ── Append operations ──────────────────────────────────────────────────────
 
-    def append_assistant(self, raw_message: ChatCompletionMessage) -> None:
+    def append_assistant(self, raw_message: Any) -> None:
         """
         Append the assistant's raw response message.
-        We call `.model_dump()` to convert the SDK object to a plain dict.
-        `exclude_unset=True` strips None fields the API dislikes on echo.
+        Uses the provider client's format_history_message() to convert
+        provider-specific objects into a canonical dict.
+        Falls back to model_dump() for OpenAI SDK objects if no client set.
         """
-        self._raw.append(raw_message.model_dump(exclude_unset=True))
+        if self._llm_client is not None:
+            self._raw.append(self._llm_client.format_history_message(raw_message))
+        elif hasattr(raw_message, "model_dump"):
+            self._raw.append(raw_message.model_dump(exclude_unset=True))
+        else:
+            self._raw.append(raw_message)
 
     def append_tool_result(self, result: ToolResult) -> None:
         """Append one tool result in the format OpenAI expects."""

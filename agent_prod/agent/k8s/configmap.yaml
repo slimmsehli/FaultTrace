@@ -1,0 +1,48 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# k8s/configmap.yaml — FaultTrace Non-Secret Configuration
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# This ConfigMap holds all non-sensitive configuration.
+# API keys and credentials live in secret.yaml.
+#
+# To switch providers without redeploying, edit FAULTTRACE_PROVIDER and
+# FAULTTRACE_MODEL here, then run:
+#   kubectl apply -f k8s/configmap.yaml
+#   kubectl rollout restart job/faulttrace -n faulttrace
+# ══════════════════════════════════════════════════════════════════════════════
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faulttrace-config
+  namespace: faulttrace
+  labels:
+    app: faulttrace
+data:
+  # ── Provider & Model ────────────────────────────────────────────────────────
+  # Options: openai | anthropic | gemini | ollama | vllm
+  FAULTTRACE_PROVIDER: "openai"
+  FAULTTRACE_MODEL: ""              # empty = use provider default
+
+  # ── On-prem endpoints (for ollama / vllm providers) ─────────────────────────
+  OLLAMA_BASE_URL: "http://ollama-service:11434/v1"
+  VLLM_BASE_URL:   "http://vllm-service:8000/v1"
+  FAULTTRACE_BASE_URL: ""           # overrides both above if set
+
+  # ── LLM tuning ───────────────────────────────────────────────────────────────
+  FAULTTRACE_TEMPERATURE: "1.0"
+  FAULTTRACE_MAX_TOKENS:  "4096"
+  FAULTTRACE_MAX_RETRIES: "3"
+  FAULTTRACE_RETRY_BASE_DELAY: "5.0"
+
+  # ── Agent loop ────────────────────────────────────────────────────────────────
+  FAULTTRACE_MAX_ITERATIONS: "50"
+  FAULTTRACE_MAX_IDLE_TURNS: "3"
+  FAULTTRACE_CONTEXT_BUDGET: "500000"
+
+  # ── Paths (matched to PVC mount points in deployment.yaml) ──────────────────
+  TOPDIR:                    "/app"
+  FAULTTRACE_PROMPTS_DIR:    "/app/prompts"
+  FAULTTRACE_OUTPUT_DIR:     "/app/output"
+  FAULTTRACE_LOG_DIR:        "/app/logs"
+  FAULTTRACE_SESSIONS_DIR:   "/app/sessions"

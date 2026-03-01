@@ -1,0 +1,12 @@
+{
+  "run_id": "cache",
+  "timestamp_utc": "2026-03-01T22:07:00.636023+00:00",
+  "model": "gpt-5-mini",
+  "status": "MAX_ITER",
+  "iterations": 50,
+  "total_tool_calls": 39,
+  "failed_tool_calls": 0,
+  "elapsed_seconds": 941.16,
+  "report_path": "/home/slim/FaultTrace/agent_prod/output/report_cache.txt",
+  "error": null
+}

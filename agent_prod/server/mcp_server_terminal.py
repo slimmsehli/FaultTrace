@@ -560,7 +560,7 @@ from mcp.server.fastmcp.exceptions import ToolError
 # WORKSPACE_ROOT = os.path.abspath(os.environ.get("PWD", "."))
 
 # Allow configuring the reports directory (relative to WORKSPACE_ROOT)
-DEFAULT_REPORTS_DIR = os.environ.get("REPORTS_DIR", "outputs/reports")
+DEFAULT_REPORTS_DIR = os.environ.get("REPORTS_DIR", "../reports")
 
 # Size guards to avoid abuse
 MAX_HTML_BYTES = 5 * 1024 * 1024       # 5 MB

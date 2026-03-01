@@ -36,7 +36,7 @@ from pathlib import Path
 
 from config import AgentConfig
 from history import MessageHistory
-from llm_client import OpenAILLMClient
+from llm_client import LLMClientFactory
 from logger import get_logger
 from loop import run_loop, LoopResult, LoopStatus
 from mcp_manager import open_mcp_pool
@@ -113,13 +113,14 @@ class AgentRunner:
         try:
             async with open_mcp_pool(self.cfg, tool_catalogue_path=tool_catalogue_path) as pool:
 
-                llm = OpenAILLMClient(self.cfg.llm)
+                llm = LLMClientFactory.create(self.cfg.llm)
 
                 history = MessageHistory(
                     system_prompt=system_prompt,
                     user_prompt=user_prompt,
                     token_budget=self.cfg.loop.context_token_budget,
                     min_pairs=self.cfg.loop.min_recent_pairs,
+                    llm_client=llm,   # enables provider-aware message formatting
                 )
 
                 result = await run_loop(
