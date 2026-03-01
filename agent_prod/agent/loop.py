@@ -41,7 +41,7 @@ from enum import Enum, auto
 
 from config import LoopConfig, ToolConfig
 from history import MessageHistory
-from llm_client import OpenAILLMClient, LLMResponse
+from llm_client import BaseLLMClient, LLMResponse
 from mcp_manager import MCPSessionPool
 from tool_executor import execute_tool
 from logger import get_logger
@@ -78,7 +78,7 @@ class LoopResult:
 async def run_loop(
     *,
     history:     MessageHistory,
-    llm:         OpenAILLMClient,
+    llm:         BaseLLMClient,
     pool:        MCPSessionPool,
     loop_cfg:    LoopConfig,
     tool_cfg:    ToolConfig,

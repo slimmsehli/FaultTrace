@@ -1,0 +1,13 @@
+2026-03-01T23:40:35 | INFO     | logger                         | Logging initialised → logs/run_cache.log
+2026-03-01T23:40:35 | INFO     | __main__                       | ═══════════════════════════════════════════════
+2026-03-01T23:40:35 | INFO     | __main__                       |   FaultTrace RTL Debug Agent
+2026-03-01T23:40:35 | INFO     | __main__                       |   run_id   : cache
+2026-03-01T23:40:35 | INFO     | __main__                       |   provider : openai
+2026-03-01T23:40:35 | INFO     | __main__                       |   model    : gpt-4o
+2026-03-01T23:40:35 | INFO     | __main__                       |   base_url : default
+2026-03-01T23:40:35 | INFO     | __main__                       |   prompts  : prompts
+2026-03-01T23:40:35 | INFO     | __main__                       |   output   : output
+2026-03-01T23:40:35 | INFO     | __main__                       | ═══════════════════════════════════════════════
+2026-03-01T23:40:35 | INFO     | runner                         | AgentRunner.run() starting (run_id=cache, model=gpt-4o)
+2026-03-01T23:40:35 | ERROR    | runner                         | Prompt file not found: prompts/system_prompt
+2026-03-01T23:40:35 | ERROR    | runner                         | Prompt file not found: prompts/user_prompt

@@ -1,0 +1,155 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# k8s/job.yaml — FaultTrace Debug Agent Job
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# FaultTrace runs as a Kubernetes Job (one-shot), not a Deployment.
+# Each debug session creates one Job run; the Job completes when the
+# agent finishes its analysis and saves the report.
+#
+# USAGE
+# ─────
+# Single run:
+#   kubectl apply -f k8s/namespace.yaml
+#   kubectl apply -f k8s/configmap.yaml
+#   kubectl apply -f k8s/secret.yaml
+#   kubectl apply -f k8s/pvc.yaml
+#   kubectl apply -f k8s/job.yaml
+#
+# Parameterised run (override model/provider at submit time):
+#   kubectl create job faulttrace-run-001 \
+#     --from=cronjob/faulttrace-cron \
+#     -n faulttrace
+#
+# Watch logs:
+#   kubectl logs -f job/faulttrace -n faulttrace
+#
+# Get report:
+#   kubectl cp faulttrace/<pod-name>:/app/output ./output
+# ══════════════════════════════════════════════════════════════════════════════
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: faulttrace
+  namespace: faulttrace
+  labels:
+    app: faulttrace
+    version: "1.0"
+spec:
+  # Number of retries if the container exits non-zero
+  backoffLimit: 2
+
+  # Clean up completed Jobs automatically after 1 hour
+  ttlSecondsAfterFinished: 3600
+
+  template:
+    metadata:
+      labels:
+        app: faulttrace
+    spec:
+      restartPolicy: Never
+      serviceAccountName: faulttrace-sa
+
+      # ── Init container: wait for on-prem LLM if needed ──────────────────────
+      # Uncomment if using Ollama/vLLM and you want to wait for it to be ready
+      # initContainers:
+      # - name: wait-for-llm
+      #   image: busybox:1.36
+      #   command: ['sh', '-c', 'until nc -z ollama-service 11434; do echo waiting; sleep 2; done']
+
+      containers:
+      - name: faulttrace
+        image: faulttrace:latest
+        imagePullPolicy: IfNotPresent   # use Always for registry-pushed images
+
+        # CLI args — run_id can be overridden per-job
+        args: ["--run-id", "$(RUN_ID)"]
+
+        # ── Environment: from ConfigMap (non-secret) ───────────────────────────
+        envFrom:
+        - configMapRef:
+            name: faulttrace-config
+
+        # ── Environment: from Secret (API keys) ───────────────────────────────
+        env:
+        - name: RUN_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name   # use pod name as run_id
+
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: faulttrace-secrets
+              key: openai-api-key
+              optional: true             # won't fail if not set
+
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: faulttrace-secrets
+              key: anthropic-api-key
+              optional: true
+
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: faulttrace-secrets
+              key: google-api-key
+              optional: true
+
+        - name: VLLM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: faulttrace-secrets
+              key: vllm-api-key
+              optional: true
+
+        # ── Volume mounts ──────────────────────────────────────────────────────
+        volumeMounts:
+        - name: prompts
+          mountPath: /app/prompts
+          readOnly: true
+        - name: output
+          mountPath: /app/output
+        - name: logs
+          mountPath: /app/logs
+        - name: sessions
+          mountPath: /app/sessions
+
+        # ── Resources ─────────────────────────────────────────────────────────
+        resources:
+          requests:
+            cpu:    "250m"
+            memory: "256Mi"
+          limits:
+            cpu:    "1000m"
+            memory: "1Gi"
+
+        # ── Security context ───────────────────────────────────────────────────
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false   # agent writes logs/output at runtime
+          capabilities:
+            drop: ["ALL"]
+
+      # ── Volumes ───────────────────────────────────────────────────────────────
+      volumes:
+      - name: prompts
+        persistentVolumeClaim:
+          claimName: faulttrace-prompts-pvc
+      - name: output
+        persistentVolumeClaim:
+          claimName: faulttrace-output-pvc
+      - name: logs
+        persistentVolumeClaim:
+          claimName: faulttrace-logs-pvc
+      - name: sessions
+        persistentVolumeClaim:
+          claimName: faulttrace-sessions-pvc
+
+      # ── DNS / image pull secrets ───────────────────────────────────────────
+      # imagePullSecrets:
+      # - name: registry-credentials
