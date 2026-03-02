@@ -4,4 +4,8 @@ venv
 simulation/simdir/
 agent_prod/simulation/runme.csh
 agent_prod/simulation/simdir
+agent_prod/outputs
+agent_prod/output
+agent_prod/sessions
+agent_prod/logs
 __pycache__
