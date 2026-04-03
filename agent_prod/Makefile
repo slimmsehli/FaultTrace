@@ -2,6 +2,8 @@
 
 default: echo "Nothing to run"
 
+# nee to add the API keys before running,
+
 clean:
 	rm -rf output sessions logs ./agent/output ./agent/logs ./agent/sessions
 
