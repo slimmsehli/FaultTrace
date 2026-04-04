@@ -9,4 +9,5 @@ agent_prod/output
 agent_prod/sessions
 agent_prod/logs
 agent_prod/agent/logs/
+agent_build/outputs
 __pycache__

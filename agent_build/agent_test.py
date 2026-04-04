@@ -129,7 +129,11 @@ async def run_agent_loop():
                 for tool_call in response_message.tool_calls:
                     # debug : extracting the tool name and arguments to be passed to the tool function
                     fname = tool_call.function.name
-                    fargs = json.loads(tool_call.function.arguments)
+                    try:
+                     fargs = json.loads(tool_call.function.arguments)
+                    except json.JSONDecodeError:
+                     print(f"[ERROR] Failed to parse JSON arguments for {fname}. Skipping.")
+                     continue
 
                     # debug : printing the function name and arguments to be called :  this is for debug purposes
                     print(f"\n[Iteration {i + 1}] [TOOL] : Tool Calling : {fname}, fargs: {fargs}")
