@@ -10,4 +10,6 @@ agent_prod/sessions
 agent_prod/logs
 agent_prod/agent/logs/
 agent_build/outputs
+agent_build/tools.json
+agent_build/temp.py
 __pycache__
