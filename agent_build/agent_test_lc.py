@@ -72,14 +72,38 @@ async def run_agent():
 	agent = create_agent(model=llm, tools=tools, system_prompt=system_prompt) #@NOTE : this was modified in the last version of langchain 
 	
 	print(f"[INFO] : Running Agent ...")
+	"""
 	response = await agent.ainvoke({
 		"message": [
 			{"role": "user", "content": user_prompt}
 		]
 	})
+	"""
+	async for chunk in agent.astream(
+		{"messages": [("user", user_prompt)]}, 
+		stream_mode="updates"
+	):
+		for node_name, data in chunk.items():
+			print(f"\n--- [Node: {node_name}] ---")
 
+			# The 'data' usually contains a list of messages added in this step
+			if "messages" in data:
+				last_msg = data["messages"][-1]
 
+			# Check if it's a Tool Call (The Agent is deciding to use a tool)
+			if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
+				for tool_call in last_msg.tool_calls:
+					print(f"🛠️  ACTION: Calling tool '{tool_call['name']}'")
+					print(f"    Args: {tool_call['args']}")
 
+			# Check if it's a Tool Result (The MCP server responded)
+			elif last_msg.type == "tool":
+				print(f"✅ OBSERVATION: Tool returned data.")
+				# print(f"    Result: {last_msg.content[:200]}...") # Optional: see snippet of result
+
+			# Check if it's the final Answer or Thought
+			else:
+				print(f"💭 THOUGHT/RESPONSE: {last_msg.content}")
 
 
 
