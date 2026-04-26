@@ -70,7 +70,7 @@ public:
     }
 
     std::string get_value_at(const std::string& sig, long long t) {
-        if (signals.find(sig) == signals.end()) return "None";
+        if (signals.find(sig) == signals.end()) return "Error: Signal not found";
         const auto& tvs = signals[sig];
         auto it = std::upper_bound(tvs.begin(), tvs.end(), t, [](long long val, const TimeValue& tv) {
             return val < tv.time;
