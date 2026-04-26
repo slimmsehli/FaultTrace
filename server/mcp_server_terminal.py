@@ -67,6 +67,7 @@ def tree(path: str = ".", args: str = "") -> str:
 
     #cmd = f"tree {args_in} {path_in}"
     cmd = ["tree", args_in, path_in]
+    cmd = ["tree"] + args.split() + [path]
     cmd = [part for part in cmd if part]
     result = subprocess.run(
         cmd,

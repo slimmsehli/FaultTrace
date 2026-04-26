@@ -16,7 +16,7 @@ comp:
 	-Wno-UNDRIVEN -Wno-UNUSEDSIGNAL -Wno-WIDTHEXPAND -Wno-IMPLICIT \
 	-Wno-PINCONNECTEMPTY -Wno-DECLFILENAME -Wno-BLKSEQ \
 	-Wno-UNUSEDPARAM -Wno-WIDTHTRUNC -Wno-VARHIDDEN -Wno-REDEFMACRO -Wno-TIMESCALEMOD \
-	-Wno-CASEINCOMPLETE |& tee ./simoutput/compile.log 
+	-Wno-CASEINCOMPLETE +incdir+tb |& tee ./simoutput/compile.log 
 
 run:
 	mkdir simresult

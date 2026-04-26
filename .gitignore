@@ -12,4 +12,7 @@ agent_prod/agent/logs/
 agent_build/outputs
 agent_build/tools.json
 agent_build/temp.py
+simulation/cache/simdir/
+simulation/cache/simresult/
+simulation/i2c/simoutput/
 __pycache__

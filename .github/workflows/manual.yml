@@ -27,6 +27,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: run servers 
+        run: |
+          cd server
+          python mcp_server_codeparser_test.py |& tee run_server_codeparser.log
+          python mcp_server_terminal_test.py |& tee run_server_terminal.log
+          python mcp_server_vcd_test.py |& tee run_server_vcd.log
 
       - name: Agent run
         env:

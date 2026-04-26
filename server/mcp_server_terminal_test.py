@@ -16,9 +16,12 @@ cpath = os.path.abspath(os.environ.get("PWD", "."))  # set explicitly
 print(f"Current path is : ", cpath)
 
 def main():
-		logfile = "../simulation/sim.log"
-		sourcecode = "../simulation/design.sv"
-		vcd_path="../simulation/sim.vcd"
+		logfile = "../simulation/cache/simresult/sim.log"
+		vcd_path="../simulation/cache/simresult/sim.vcd"
+		sourcecode="../simulation/cache/rtl/mesi_cache.v"
+		simpath="../simulation/cache/"
+		simpath2="../simulation/i2c/"
+		compfile = "../simulation/cache/simresult/compile.log"
 		
 		print(f"\n##################################################################################################")
 		print(f"#  ")
@@ -43,27 +46,27 @@ def main():
 
 		print(f"##################################################################################################")
 		print(f"### TEST2 : grep ")
-		result = mcp_server.grep("UVM_ERROR", logfile, "-ri")
+		result = mcp_server.grep("ERROR", logfile, "-ri")
 		print(result)
 
 		print(f"##################################################################################################")
 		print(f"### TEST3 : find ")
-		result = mcp_server.find("../simulation", "-type f -name '*.log'") #{"path":"", "args":'-name "mcp_server*.py" -type f'})
+		result = mcp_server.find(simpath, "-type f -name '*.log'") #{"path":"", "args":'-name "mcp_server*.py" -type f'})
 		print(result)
 
 		print(f"##################################################################################################")
 		print(f"### TEST4 : cat ")
-		result = mcp_server.cat("../README.md", "-n")
+		result = mcp_server.cat(logfile, "-n")
 		print(result)
 		
 		print(f"##################################################################################################")
 		print(f"### TEST5 : head ")
-		result = mcp_server.head("../README.md", "")
+		result = mcp_server.head(logfile, "")
 		print(result)
 		
 		print(f"##################################################################################################")
 		print(f"### TEST6 : tail ")
-		result = mcp_server.tail("../README.md", "")
+		result = mcp_server.tail(logfile, "")
 		print(result)
 		
 		print(f"##################################################################################################")
@@ -83,9 +86,9 @@ def main():
 		
 		print(f"##################################################################################################")
 		print(f"### TEST10 : diff ")
-		result = mcp_server.diff("../simulation/compile.log","../simulation/sim.log","")
+		result = mcp_server.diff(compfile,logfile,"")
 		print(result)
-		result = mcp_server.diff("../server", "../agent", "-r") # for dirrectories
+		result = mcp_server.diff(simpath, simpath2, "-r") # for dirrectories
 		print(result)
 
 if __name__ == "__main__":

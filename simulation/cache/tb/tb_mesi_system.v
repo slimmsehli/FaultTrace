@@ -471,5 +471,10 @@ module tb_top;
         $display("[WATCHDOG] Simulation exceeded time limit — possible deadlock!");
         $finish;
     end
+    
+    initial begin
+    	$dumpfile("sim.vcd");
+      $dumpvars(0, tb_top);
+    end
 
 endmodule
