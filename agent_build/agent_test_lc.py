@@ -41,10 +41,15 @@ async def run_agent():
 			"command": "python3",
 			"args": ["../server/mcp_server_terminal.py"],
 		},
-		"Simulation_tools_server": {
+		"Simulation_vcdparser_server": {
 			"transport": "stdio", # @NOTE this is added because by default longchain client does not know how to talk to the mcp srvers  
 			"command": "python3",
-			"args": ["../server/mcp_server_str_wrapper.py"],
+			"args": ["../server/mcp_server_vcd.py"],
+		},
+		"Simulation_codeparser_server": {
+			"transport": "stdio", # @NOTE this is added because by default longchain client does not know how to talk to the mcp srvers  
+			"command": "python3",
+			"args": ["../server/mcp_server_codeparser.py"],
 		}
 	})
 	
