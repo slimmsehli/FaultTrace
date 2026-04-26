@@ -44,7 +44,7 @@ async def run_agent():
 		"Simulation_vcdparser_server": {
 			"transport": "stdio", # @NOTE this is added because by default longchain client does not know how to talk to the mcp srvers  
 			"command": "python3",
-			"args": ["../server/mcp_server_vcd.py"],
+			"args": ["../server/mcp_server_vcd_cpp.py"],
 		},
 		"Simulation_codeparser_server": {
 			"transport": "stdio", # @NOTE this is added because by default longchain client does not know how to talk to the mcp srvers  
@@ -108,7 +108,7 @@ async def run_agent():
 
 			# Check if it's a Tool Result (The MCP server responded)
 			elif last_msg.type == "tool":
-				print(f" OBSERVATION: Tool returned data.")
+				print(f" OBSERVATION: Tool returned data. : \n  {last_msg.content} ")
 				# print(f"    Result: {last_msg.content[:200]}...") # Optional: see snippet of result
 
 			# Check if it's the final Answer or Thought
